@@ -127,7 +127,7 @@
         
         .top-utility-controls {
             display: flex;
-            justify-content: center; /* MODIFIED: Was flex-end, now center */
+            justify-content: center; 
             align-items: center;
             padding: 5px 10px; 
             margin-bottom: 10px; 
@@ -136,15 +136,15 @@
             flex-wrap: wrap; 
         }
 
-        .top-utility-controls .btn { /* Base style for top utility buttons if they were text */
+        .top-utility-controls .btn { 
             padding: 6px 12px; 
             font-size: 12px; 
             border-radius: 20px; 
             margin: 5px; 
         }
-        .top-utility-controls .btn.icon-only { /* Specific for icon-only buttons in top bar */
-            font-size: 1.3rem; /* "Big" icons for top bar */
-            padding: 6px 8px; /* Adjust padding for icons */
+        .top-utility-controls .btn.icon-only { 
+            font-size: 1.3rem; 
+            padding: 6px 8px; 
         }
 
 
@@ -192,7 +192,21 @@
             max-height: 90vh; 
             overflow-y: auto; 
         }
-        .popup-close-btn { position: absolute; top: 10px; right: 15px; font-size: 2rem; color: #aaa; cursor: pointer; line-height: 1; }
+        .popup-close-btn { 
+            position: absolute; 
+            top: 10px; 
+            right: 15px; 
+            font-size: 2rem; 
+            color: #e74c3c; /* Red color */
+            cursor: pointer; 
+            line-height: 1; 
+            transition: transform 0.2s ease, color 0.2s ease; 
+            animation: blinkRedClose 1.5s infinite ease-in-out; 
+        }
+        .popup-close-btn:hover {
+            transform: scale(1.15); 
+            color: #c0392b; 
+        }
         
         .popup-content h2 {
             font-size: 1.6rem; 
@@ -277,12 +291,12 @@
             transition: opacity 0.7s 0.5s ease-out, transform 0.7s 0.5s ease-out; 
         }
         .syllable-box .final-letter-player { opacity: 0; transition: opacity 0.5s 1.5s ease; }
-        .syllable-box .btn-speak.final-letter-player { /* Keep its original appearance or slightly adjust */
+        .syllable-box .btn-speak.final-letter-player { 
             font-size: 1rem; 
             padding: 5px;
             background: transparent;
             border: none;
-            color: white; /* Or inherit */
+            color: white; 
         }
 
 
@@ -366,6 +380,16 @@
         @keyframes expandPulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes popup-appear { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
         @keyframes reveal-wod { 0% { box-shadow: 0 0 0 0 rgba(253, 121, 168, 0.7); } 50% { box-shadow: 0 0 0 20px rgba(253, 121, 168, 0); } 100% { box-shadow: 0 0 0 0 rgba(253, 121, 168, 0); } }
+        @keyframes blinkRedClose { /* New animation for popup close button */
+            0%, 100% {
+                text-shadow: 0 0 4px rgba(255, 0, 0, 0.5);
+                opacity: 1;
+            }
+            50% {
+                text-shadow: 0 0 12px rgba(255, 0, 0, 0.9);
+                opacity: 0.8;
+            }
+        }
 
         @media (max-width: 768px) {
             .popup-content { padding: 20px; }
@@ -386,7 +410,6 @@
              #autoModeBtn, #startSyllableModeBtn { 
                 padding: 12px 20px !important; 
                 font-size: calc(14px * 1.5) !important;  
-                /* min-width: 200px; /* Let it be auto based on content */
             }
         }
          @media (max-width: 600px) { 
@@ -411,7 +434,6 @@
             #autoModeBtn, #startSyllableModeBtn { 
                 padding: 10px 15px !important; 
                 font-size: calc(14px * 1.3) !important;  
-                /* min-width: 180px; /* Let it be auto */
             }
 
             .letter-forms-container { gap: 10px; }
@@ -432,8 +454,8 @@
         <div class="exercise-mode" id="exerciseMode" style="min-height: auto;">
             <div class="top-utility-controls" id="topUtilityBar"></div>
 
-            <div id="mainControls" class="controls"><button id="autoModeBtn" class="btn btn-auto blink-attention" title="اتعرف على كلمات اليوم"><span class="button-icon-main">▶️</span><span class="button-step-number" style="display: inline-flex;">1</span></button></div>
-            <div id="wodTransitionControls" class="controls hidden"><button id="startSyllableModeBtn" class="btn btn-guide" title="اتعرف على اصوات اليوم"><span class="button-icon-main">🗣️</span><span class="button-step-number">2</span></button></div>
+            <div id="mainControls" class="controls"><button id="autoModeBtn" class="btn btn-auto" title="اتعرف على كلمات اليوم"><span class="button-icon-main">▶️</span><span class="button-step-number" style="display: inline-flex;">1</span></button></div>
+            <div id="wodTransitionControls" class="controls hidden"><button id="startSyllableModeBtn" class="btn btn-guide blink-attention" title="اتعرف على اصوات اليوم"><span class="button-icon-main">🗣️</span><span class="button-step-number">2</span></button></div>
              <div id="syllableControls" class="controls hidden">
                  {/* This div is now effectively unused as manual syllable mode is gone */}
              </div>
@@ -465,9 +487,9 @@
     </div>
 
     <script id="exportedScript">
-        const preloadedText = "aujourd'hui Farid ne peut pas aller. maman donne à Farid un livre. camion est grand.";
-        const preloadedWordOfDay = "Farid, maman, camion";
-        const preloadedSyllableConfig = "Farid:Fa-rid:a, maman:ma-man:a, camion:ca-mion:ion";
+        const preloadedText = "aujourd'hui farid ne peut pas aller. maman donne à farid un livre. camion est grand.";
+        const preloadedWordOfDay = "farid, maman, camion";
+        const preloadedSyllableConfig = "farid:fa-rid:a, maman:ma-man:a, camion:ca-mion:ion";
         const preloadedAudioFolderPath = "audio/";
         const preloadedAudioFileExtension = ".mp3";
         const preloadedDialoguePage = "index.html";
@@ -1302,8 +1324,7 @@
 
             const audioPlayer = document.createElement('button');
             audioPlayer.innerHTML = '🔊';
-            audioPlayer.className = 'btn btn-speak final-letter-player'; // Has .btn
-            // audioPlayer.style.opacity = '0'; // Opacity handled by CSS or direct animation later
+            audioPlayer.className = 'btn btn-speak final-letter-player'; 
             audioPlayer.onclick = (e) => { 
                 e.stopPropagation(); 
                 if(isAutoModeActive && activeAudioObject && !activeAudioObject.paused) return; 
@@ -1313,7 +1334,6 @@
             sodCharBox.appendChild(audioPlayer);
             
             await playWordAudio(finalLetterSOD, sodCharBox); 
-            // audioPlayer.style.opacity = '1'; // Make it visible after play
         }
         
         function resetSyllableCard(card) { 
