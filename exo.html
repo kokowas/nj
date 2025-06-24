@@ -1,0 +1,1822 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercice de Mots Français (Exporté)</title>
+    <style>
+        
+        @font-face {
+            font-family: 'Cursive'; 
+            src: url('Cursivestandard.ttf') format('truetype'); 
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'CursiveFallback';
+            src: url('https://fonts.gstatic.com/s/greatvibes/v14/6q1c0ofG6NKs1-g_G7p_3rec7HA.woff2') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 10px; }
+        .container { max-width: 1200px; margin: 0 auto; background: rgba(255, 255, 255, 0.95); border-radius: 20px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 20px; text-align: center; color: white; }
+        .header h1 { font-size: 2rem; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); }
+        .editor-mode, .exercise-mode { padding: 20px; box-sizing: border-box; }
+        .editor-mode.hidden, .exercise-mode.hidden, .hidden { display: none !important; }
+        .editor-label { font-size: 1.1rem; font-weight: bold; color: #333; margin-bottom: 10px; }
+        .text-editor, .word-of-day-input, .syllable-input, .audio-config-input, .words-per-lap-input {
+            width: 100%; padding: 12px; border: 3px solid #e0e0e0; border-radius: 15px; font-size: 16px; font-family: inherit; background: #fafafa; margin-bottom: 10px; 
+        }
+        .audio-filename-input { width: calc(50% - 5px); }
+        .audio-input-group { display: flex; gap: 10px; margin-bottom: 10px;}
+
+        .controls { display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap; justify-content: center; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
+        .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); }
+        .btn:disabled { background-image: none; background-color: #b0bec5; cursor: not-allowed; opacity: 0.6; }
+        .btn-guide { background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%); }
+        .btn-auto { background: linear-gradient(135deg, #ff9a8b 0%, #ff6a88 100%);}
+        .btn-demo { background: linear-gradient(to right, #f83600 0%, #f9d423 100%); }
+        
+        #autoModeBtn, #startSyllableModeBtn {
+            border-radius: 8px !important; 
+            padding: 15px 30px !important; 
+            font-size: calc(14px * 1.6) !important; 
+            min-width: 220px; 
+            text-align: center;
+            line-height: 1.2; 
+        }
+
+        @keyframes blinkAttention {
+            0%, 100% { 
+                transform: scale(1); 
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
+                opacity: 1;
+            }
+            50% { 
+                transform: scale(1.05); 
+                box-shadow: 0 8px 30px rgba(255, 106, 136, 0.6); 
+                opacity: 0.7; 
+            }
+        }
+
+        .blink-attention {
+            animation: blinkAttention 1.2s infinite ease-in-out !important;
+        }
+
+
+        .single-column-container { width: 100%; max-width: 800px; margin: 0 auto; }
+        .word-column { background: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 15px; min-height: 200px; padding: 20px; position: relative; width: 100%; text-align: center; }
+        .word-box { 
+            display: inline-block; 
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%); 
+            color: white; 
+            padding: 8px 16px; margin: 5px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+        }
+        .word-box.is-playing {
+            background: linear-gradient(135deg, #ff9a8b 0%, #ff6a88 100%) !important; 
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 106, 136, 0.7);
+        }
+        .word-box.word-of-day-styled { 
+            background: linear-gradient(135deg, #ffd700 0%, #ffb347 100%); 
+            color: #333; 
+            border: 3px solid #ff6b6b; 
+            opacity: 1;
+        }
+        .word-box.word-of-day-styled.is-playing { 
+             background: linear-gradient(135deg, #ffc56e 0%, #ff9c1a 100%) !important;
+             box-shadow: 0 0 15px rgba(255, 180, 70, 0.8);
+        }
+
+        .word-box.vibrate { animation: vibrate 0.3s linear; }
+        .word-box.reveal-wod { animation: reveal-wod 1.5s ease-in-out; } 
+
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px); }
+        .popup-content { 
+            background: white; 
+            padding: 25px; 
+            border-radius: 20px; 
+            text-align: center; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+            animation: popup-appear 0.5s ease-out; 
+            position: relative;
+            max-width: 90vw; 
+            width: auto; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+        }
+        .popup-close-btn { position: absolute; top: 10px; right: 15px; font-size: 2rem; color: #aaa; cursor: pointer; line-height: 1; }
+        
+        .popup-content h2 {
+            font-size: 1.6rem; 
+            margin-bottom: 15px;
+            color: #555;
+        }
+        #wodTransitionScreen .popup-words { 
+            font-size: 2.5rem; 
+            font-weight: bold; 
+            color: #e84393; 
+            margin-bottom: 20px;
+        }
+        
+        #finalSoundScreen .popup-words {
+            font-size: 2.5rem; 
+            font-weight: bold;
+            color: #e84393; 
+            margin-bottom: 20px; 
+        }
+
+        #syllableModeContainer { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+        .syllable-word-card { background: #f0f8ff; border: 2px solid #4facfe; border-radius: 15px; padding: 15px; flex-basis: 45%; min-width: 280px; display: flex; flex-direction: column; align-items: center; transition: box-shadow 0.3s ease; }
+        
+        .syllable-word-card-header {
+            font-size: 1.8rem; 
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .syllable-word-card.is-active { animation: reveal-wod 1.5s infinite; }
+        .syllable-boxes-container { margin-bottom: 15px; min-height: 50px; text-align: center; }
+        .syllable-box { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 10px; 
+            background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%); 
+            color: white; 
+            padding: 10px 18px; 
+            margin: 5px;        
+            border-radius: 20px;
+            cursor: pointer; 
+            font-size: 1.3rem;  
+            transition: opacity 0.3s ease, transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+        }
+        .syllable-box.is-playing {
+            background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%) !important; 
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(232, 67, 147, 0.6);
+        }
+        .syllable-box.is-deleting {
+            text-decoration: line-through #d63031 3px solid !important; 
+            background: linear-gradient(135deg, #ff7675 0%, #d63031 100%) !important; 
+            color: #fff !important;
+        }
+        .syllable-box.contains-final-letter { /* Optional styling */ }
+        .syllable-box.letter-of-day { 
+            font-size: 1.8rem; 
+            padding: 12px 20px; 
+            animation: expandPulse 2s infinite; cursor: default; 
+            background: linear-gradient(135deg, #ffd700 0%, #ffb347 100%); color: #333; border: 2px solid #ff6b6b;
+            display: inline-flex; 
+            align-items: center;
+            gap: 10px;
+        }
+         .syllable-box.letter-of-day.is-playing { 
+             background: linear-gradient(135deg, #feca57 0%, #ff9f43 100%) !important; 
+             box-shadow: 0 0 15px rgba(255, 159, 67, 0.8);
+        }
+        .syllable-box .part-to-delete { 
+            transition: opacity 0.7s 0.5s ease-out, transform 0.7s 0.5s ease-out; 
+        }
+        .syllable-box .final-letter-player { opacity: 0; transition: opacity 0.5s 1.5s ease; }
+        
+
+        /* Styling for individual letter boxes during final breakdown */
+        .letter-in-syllable-box {
+            display: inline-block;
+            background: linear-gradient(135deg, #55efc4 0%, #00b894 100%);
+            color: white;
+            padding: 8px 12px;
+            margin: 3px;
+            border-radius: 10px;
+            font-size: 1.2rem; 
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s ease, transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+            min-width: 30px; 
+            text-align: center;
+        }
+        .letter-in-syllable-box.is-playing {
+            background: linear-gradient(135deg, #81ecec 0%, #00cec9 100%) !important; 
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(0, 206, 201, 0.6);
+        }
+        .letter-in-syllable-box.is-sod { 
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%) !important;
+            color: #333 !important;
+            border: 2px solid #d63031;
+            cursor: default; 
+            font-size: 1.3rem; 
+            padding: 8px 12px;  
+        }
+        .letter-in-syllable-box.is-deleting-char { 
+            text-decoration: line-through #d63031 2px solid !important;
+            background: linear-gradient(135deg, #ff7675 0%, #d63031 100%) !important; 
+            color: #fff !important;
+        }
+
+
+        .letter-forms-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px; 
+        }
+        .letter-form-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px 20px; 
+            text-align: center;
+            border: 1px solid #ddd;
+            padding: 15px; 
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+        .letter-form-group > div { 
+            border: 2px solid transparent; 
+            padding: 5px;
+            border-radius: 8px;
+            transition: border-color 0.3s ease;
+        }
+        .letter-form-group .form-type-maj { border-color: #3498db; }
+        .letter-form-group .form-type-maj:hover { border-color: #2980b9; }
+        .letter-form-group .form-type-min { border-color: #e74c3c; }
+        .letter-form-group .form-type-min:hover { border-color: #c0392b; }
+
+        .letter-form {
+            font-size: 2.5rem; 
+            line-height: 1.1;
+        }
+        .letter-form.cursive { font-family: 'Cursive', 'CursiveFallback', cursive; }
+        .letter-form-label {
+            font-size: 0.8rem; 
+            color: #666;
+            line-height: 1.1;
+        }
+        
+        @keyframes vibrate {
+            0% { transform: translate(0); } 20% { transform: translate(-2px, 2px); } 40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); } 80% { transform: translate(2px, -2px); } 100% { transform: translate(0); }
+        }
+        @keyframes expandPulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes popup-appear { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        @keyframes reveal-wod { 0% { box-shadow: 0 0 0 0 rgba(253, 121, 168, 0.7); } 50% { box-shadow: 0 0 0 20px rgba(253, 121, 168, 0); } 100% { box-shadow: 0 0 0 0 rgba(253, 121, 168, 0); } }
+
+        @media (max-width: 768px) {
+            .popup-content { padding: 20px; }
+            .popup-content h2 { font-size: 1.5rem; } 
+            #wodTransitionScreen .popup-words, #finalSoundScreen .popup-words { font-size: 2.2rem; }
+
+            .syllable-word-card-header { font-size: 1.6rem; }
+            .syllable-box { padding: 8px 15px; font-size: 1.1rem; }
+            .syllable-box.letter-of-day { font-size: 1.8rem; padding: 12px 20px; }
+            .letter-in-syllable-box { font-size: 1.1rem; padding: 7px 10px; }
+            .letter-in-syllable-box.is-sod { font-size: 1.3rem; padding: 8px 12px; }
+
+
+            .letter-forms-container { gap: 15px; }
+            .letter-form-group { padding: 12px; gap: 8px 15px; }
+            .letter-form { font-size: 2rem; } 
+            .letter-form-label { font-size: 0.75rem; } 
+             #autoModeBtn, #startSyllableModeBtn { 
+                padding: 12px 20px !important; 
+                font-size: calc(14px * 1.3) !important; 
+                min-width: 180px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .popup-content { padding: 15px; }
+            .popup-content h2 { font-size: 1.3rem; } 
+            #wodTransitionScreen .popup-words, #finalSoundScreen .popup-words { font-size: 1.9rem; } 
+            
+            .syllable-word-card-header { font-size: 1.4rem; }
+            .syllable-box { padding: 6px 12px; font-size: 1rem; }
+            .syllable-box.letter-of-day { font-size: 1.6rem; padding: 10px 18px; }
+            .letter-in-syllable-box { font-size: 1rem; padding: 6px 8px; }
+            .letter-in-syllable-box.is-sod { font-size: 1.2rem; padding: 7px 10px; }
+
+            #autoModeBtn, #startSyllableModeBtn { 
+                padding: 10px 15px !important; 
+                font-size: calc(14px * 1.1) !important; 
+                min-width: 150px;
+            }
+
+            .letter-forms-container { gap: 10px; }
+            .letter-form-group {
+                padding: 10px;
+                gap: 6px 10px;
+            }
+            .letter-form { font-size: 1.7rem; } 
+            .letter-form-label { font-size: 0.7rem; } 
+        }
+    
+        .editor-mode { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header"><h1>اتعرف على صوت اليوم</h1><p>Complétez l'exercice interactif.</p></div>
+        <div class="exercise-mode" id="exerciseMode">
+            <div id="mainControls" class="controls">
+                <button id="autoModeBtn" class="btn btn-auto blink-attention" onclick="toggleAutoMode()">اتعرف على كلمات اليوم</button>
+                <button class="btn" id="btnBackToDialoguePage" data-page="dialogue.html" onclick="goToDialoguePage()">أعود إلى صفحة الحوار</button>
+                <button class="btn" onclick="resetWords()">🔄</button>
+                
+            </div>
+            <div id="wodTransitionControls" class="controls hidden">
+                 <button id="startSyllableModeBtn" class="btn btn-guide">اتعرف على اصوات اليوم</button>
+                 <button id="replayWordsBtn" class="btn">🔄 اعادة مشاهدة حذف الكلمات</button>
+            </div>
+             <div id="syllableControls" class="controls hidden">
+                 <button id="replaySyllablesManualBtn" class="btn">🔄 قطع الكلمات يدويا</button>
+            </div>
+            <div id="finalControls" class="controls hidden">
+                <button id="fullDemoBtn" class="btn btn-demo">اشاهد التمرين كاملا</button>
+                <button id="replaySyllablesBtn" class="btn">🔄 قطع الكلمات مجددا</button>
+                <button class="btn" id="goToMenuPageBtn" onclick="location.reload()">العودة الى بداية التعرف</button>
+            </div>
+
+            <div class="single-column-container" id="wordModeContainer"><div class="word-column" id="column1"></div></div>
+            <div class="single-column-container hidden" id="syllableModeContainer"></div>
+            
+            <div id="wodTransitionScreen" class="overlay hidden">
+                <div class="popup-content">
+                    <span class="popup-close-btn" onclick="this.parentElement.parentElement.classList.add('hidden'); stopAllAudio();">×</span>
+                    <h2 id="wodPopupTitle">كلمات اليوم هي :</h2>
+                    <div id="wodTransitionText" class="popup-words"></div>
+                </div>
+            </div>
+            <div id="finalSoundScreen" class="overlay hidden">
+                 <div class="popup-content">
+                    <span class="popup-close-btn" onclick="this.parentElement.parentElement.classList.add('hidden'); stopAllAudio();">×</span>
+                    <h2 id="sodPopupTitle">صوت اليوم هو :</h2>
+                    <div id="finalSoundText" class="popup-words"></div>
+                    <div class="letter-forms-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script id="exportedScript">
+        const preloadedText = "aujourd'hui Farid ne peut pas aller. maman donne à Farid un livre. camion est grand.";
+        const preloadedWordOfDay = "Farid, maman, camion";
+        const preloadedSyllableConfig = "Farid:Fa-rid:a, maman:ma-man:a, camion:ca-mion:ion";
+        const preloadedAudioFolderPath = "audio/";
+        const preloadedAudioFileExtension = ".mp3";
+
+        
+        let originalWords = []; 
+        let nonRemovableWords = [];
+        let syllableConfig = {};
+        let wordsPerLap = 5; const preloadedWordsPerLap = 5; 
+        let isAutoModeActive = false;
+        let audioFolderPath = '', audioFileExtension = '';
+        let phraseSoundFilename = 'phrase';
+        let deleteSoundFilename = 'delete';
+        let becameSoundFilename = 'became'; 
+        let wodSoundFilename = 'wod';       
+        let sodSoundFilename = 'sod';  
+        let otherWordSoundFilename = 'otherword';     
+        let initialPhrasePlayedForAutoMode = false;
+        let currentAudioSequence = Promise.resolve(); 
+        let activeAudioObject = null;
+        let initialExerciseHeight = 0; 
+        let currentlyPlayingWordElement = null; 
+        let currentlyPlayingSyllableElement = null;
+
+
+        const PUNCTUATION_REGEX = /[.'’,/#!$%^&*;:{}=\-_`~()""]/g;
+        const PAUSE_BEFORE_POPUP = 800; 
+        const PAUSE_AFTER_WOD_INTRO = 500; 
+
+        document.getElementById('startSyllableModeBtn').addEventListener('click', function() {
+            this.classList.remove('blink-attention');
+            document.getElementById('wodTransitionScreen').classList.add('hidden'); 
+            isAutoModeActive = true; 
+            const autoBtn = document.getElementById('autoModeBtn');
+            if(autoBtn) {
+                autoBtn.textContent = '⏹️';
+                autoBtn.classList.remove('blink-attention');
+            }
+            document.querySelectorAll('#wodTransitionControls .btn').forEach(b => b.disabled = true); 
+            startAutoSyllableMode(); 
+        });
+
+        document.getElementById('replayWordsBtn').addEventListener('click', () => resetWords()); 
+        document.getElementById('replaySyllablesBtn').addEventListener('click', replaySyllableMode);
+        document.getElementById('replaySyllablesManualBtn').addEventListener('click', () => enterSyllableMode(true));
+        document.getElementById('fullDemoBtn').addEventListener('click', startFullDemo);
+        
+        function robustCleanString(str) {
+            if (typeof str !== 'string') return '';
+            let s = str;
+            if (typeof s.normalize === 'function') { 
+                s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, "");
+                s = s.normalize('NFC'); 
+            }
+            s = s.replace(/['’`]/g, ""); 
+            s = s.replace(/[\u200B-\u200D\uFEFF]/g, "");
+            return s;
+        }
+
+        function parseConfigData() {
+            const wodValue = (typeof preloadedWordOfDay !== 'undefined') ? preloadedWordOfDay : document.getElementById('wordOfDay').value;
+            nonRemovableWords = wodValue.split(',')
+                .map(w => robustCleanString(w.trim()).toLowerCase())
+                .filter(Boolean);
+
+            syllableConfig = {};
+            const syllableConfigValue = (typeof preloadedSyllableConfig !== 'undefined') ? preloadedSyllableConfig : document.getElementById('syllableConfig').value;
+            if (syllableConfigValue) {
+                syllableConfigValue.split(',').forEach(configEntry => {
+                    let [word, syllablesStr, finalLetter] = configEntry.split(':').map(p => p.trim());
+                    if (word && syllablesStr && finalLetter) {
+                        word = robustCleanString(word);
+                        syllableConfig[word.toLowerCase()] = { 
+                            syllables: syllablesStr.split('-').map(s => s.trim()), 
+                            finalLetter: finalLetter.toLowerCase() 
+                        };
+                    }
+                });
+            }
+        }
+
+        function stopAllAudio() {
+            if (activeAudioObject) {
+                activeAudioObject.pause();
+                activeAudioObject.removeAttribute('src'); 
+                activeAudioObject.load(); 
+                activeAudioObject = null; 
+            }
+            if (currentlyPlayingWordElement) {
+                currentlyPlayingWordElement.classList.remove('is-playing');
+                currentlyPlayingWordElement = null;
+            }
+             if (currentlyPlayingSyllableElement) {
+                currentlyPlayingSyllableElement.classList.remove('is-playing');
+                currentlyPlayingSyllableElement = null;
+            }
+            currentAudioSequence = Promise.resolve();
+            document.querySelectorAll('.word-box[data-deleting="true"], .syllable-box[data-deleting="true"], .syllable-box[data-finalizing="true"], .letter-in-syllable-box[data-deleting="true"]').forEach(el => {
+                el.dataset.deleting = '';
+                el.dataset.finalizing = '';
+            });
+        }
+
+        function playWordAudio(text, elementToHighlight = null) {
+            return new Promise((resolve) => {
+                if (!text || !audioFolderPath || !audioFileExtension) { resolve(); return; }
+                const cleanedTextForFile = robustCleanString(text).toLowerCase().trim();
+                if (!cleanedTextForFile) { resolve(); return; }
+                
+                if (activeAudioObject && !activeAudioObject.paused) {
+                    activeAudioObject.pause();
+                    activeAudioObject.removeAttribute('src');
+                    activeAudioObject.load();
+                }
+                 if (currentlyPlayingWordElement) { 
+                    currentlyPlayingWordElement.classList.remove('is-playing');
+                }
+                if (currentlyPlayingSyllableElement) {
+                    currentlyPlayingSyllableElement.classList.remove('is-playing');
+                }
+                
+                const newAudio = new Audio(); 
+                activeAudioObject = newAudio; 
+
+                let isWordBox = false;
+                let isSyllableType = false; 
+
+                if (elementToHighlight) {
+                    isWordBox = elementToHighlight.classList.contains('word-box');
+                    isSyllableType = elementToHighlight.classList.contains('syllable-box') || elementToHighlight.classList.contains('letter-in-syllable-box');
+                    
+                    if (isWordBox || isSyllableType) {
+                        elementToHighlight.classList.add('is-playing');
+                        if (isWordBox) currentlyPlayingWordElement = elementToHighlight;
+                        if (isSyllableType) currentlyPlayingSyllableElement = elementToHighlight;
+                    }
+                }
+                
+                const onEndOrError = () => {
+                    newAudio.removeEventListener('ended', onEndOrError);
+                    newAudio.removeEventListener('error', onEndOrError);
+                    if (activeAudioObject === newAudio) { 
+                        activeAudioObject = null;
+                    }
+                    if (elementToHighlight && (isWordBox || isSyllableType)) { 
+                        elementToHighlight.classList.remove('is-playing');
+                        if (isWordBox && currentlyPlayingWordElement === elementToHighlight) {
+                           currentlyPlayingWordElement = null;
+                        }
+                        if (isSyllableType && currentlyPlayingSyllableElement === elementToHighlight) {
+                           currentlyPlayingSyllableElement = null;
+                        }
+                    }
+                    resolve();
+                };
+                
+                newAudio.src = `${audioFolderPath}${cleanedTextForFile}${audioFileExtension}`;
+                newAudio.addEventListener('ended', onEndOrError);
+                newAudio.addEventListener('error', () => {
+                    console.warn(`Could not play: ${newAudio.src} for text: ${text} (cleaned file: ${cleanedTextForFile})`);
+                    onEndOrError(); 
+                });
+
+                newAudio.play().catch(e => { 
+                    console.warn(`Error playing ${newAudio.src}: ${e}`); 
+                    onEndOrError(); 
+                });
+            });
+        }
+        
+        function stopAutoMode() {
+            isAutoModeActive = false;
+            initialPhrasePlayedForAutoMode = false;
+            stopAllAudio(); 
+            const autoBtn = document.getElementById('autoModeBtn');
+            if(autoBtn) {
+                 autoBtn.textContent = 'اتعرف على كلمات اليوم';
+                 if (!document.getElementById('wordModeContainer')?.classList.contains('hidden') || 
+                     (document.getElementById('editorMode') && !document.getElementById('editorMode').classList.contains('hidden'))) {
+                    autoBtn.classList.add('blink-attention'); 
+                 }
+            }
+            const startSyllableBtn = document.getElementById('startSyllableModeBtn');
+            if (startSyllableBtn && startSyllableBtn.closest('#wodTransitionControls') && !startSyllableBtn.closest('#wodTransitionControls').classList.contains('hidden')){
+                 startSyllableBtn.classList.add('blink-attention');
+            }
+
+            document.querySelectorAll('#mainControls .btn, #wodTransitionControls .btn, #syllableControls .btn, #finalControls .btn').forEach(b => b.disabled = false);
+        
+            if (!document.getElementById('syllableModeContainer')?.classList.contains('hidden')) {
+                 enterSyllableMode(true); 
+            }
+        }
+
+        function populateOriginalWordsFromSource(sourceText) {
+            if (sourceText && sourceText.trim() !== '') {
+                originalWords = sourceText.trim().replace(PUNCTUATION_REGEX, "").split(/\s+/).filter(Boolean);
+            } else {
+                originalWords = [];
+            }
+        }
+
+
+        function exportExercise() {
+            const rawText = document.getElementById('textEditor').value;
+            if (!rawText.trim()) { alert('Veuillez saisir du texte !'); return; }
+            
+            audioFolderPath = document.getElementById('audioFolderPath').value;
+            audioFileExtension = document.getElementById('audioFileExtension').value;
+            phraseSoundFilename = document.getElementById('phraseSoundName').value.trim() || 'phrase';
+            deleteSoundFilename = document.getElementById('deleteSoundName').value.trim() || 'delete';
+            becameSoundFilename = document.getElementById('becameSoundName').value.trim() || 'became';
+            wodSoundFilename = document.getElementById('wodSoundName').value.trim() || 'wod';
+            sodSoundFilename = document.getElementById('sodSoundName').value.trim() || 'sod';
+            otherWordSoundFilename = document.getElementById('otherWordSoundName').value.trim() || 'otherword';
+
+            wordsPerLap = parseInt(document.getElementById('wordsPerLap').value, 10) || 1;
+            if (wordsPerLap < 1) wordsPerLap = 1;
+            
+            populateOriginalWordsFromSource(rawText);
+            parseConfigData();
+            
+            resetWords(true); 
+            document.getElementById('editorMode').classList.add('hidden');
+            document.getElementById('exerciseMode').classList.remove('hidden'); 
+        }
+
+        function backToEditor() {
+            stopAllAudio(); 
+            stopAutoMode(); 
+
+            document.getElementById('exerciseMode').classList.add('hidden');
+            document.getElementById('editorMode').classList.remove('hidden');
+            const exerciseModeDiv = document.getElementById('exerciseMode');
+            if (exerciseModeDiv) exerciseModeDiv.style.minHeight = 'auto'; 
+
+
+            const column1 = document.getElementById('column1');
+            if (column1) column1.innerHTML = '';
+            
+            const syllableModeContainer = document.getElementById('syllableModeContainer');
+            if (syllableModeContainer) {
+                syllableModeContainer.innerHTML = '';
+                syllableModeContainer.classList.add('hidden');
+            }
+            const wordModeContainer = document.getElementById('wordModeContainer');
+            if (wordModeContainer) wordModeContainer.classList.remove('hidden'); 
+
+            const wodTransitionScreen = document.getElementById('wodTransitionScreen');
+            if (wodTransitionScreen) wodTransitionScreen.classList.add('hidden');
+            const finalSoundScreen = document.getElementById('finalSoundScreen');
+            if (finalSoundScreen) finalSoundScreen.classList.add('hidden');
+
+            const mainControls = document.getElementById('mainControls');
+            if (mainControls) mainControls.classList.remove('hidden');
+            
+            const wodTransitionControls = document.getElementById('wodTransitionControls');
+            if (wodTransitionControls) wodTransitionControls.classList.add('hidden');
+            
+            const syllableControls = document.getElementById('syllableControls');
+            if (syllableControls) syllableControls.classList.add('hidden');
+
+            const finalControls = document.getElementById('finalControls');
+            if (finalControls) finalControls.classList.add('hidden');
+
+            document.querySelectorAll('#mainControls .btn:not(#autoModeBtn)').forEach(b => b.disabled = false);
+        }
+
+
+        function createWordBox(word) { 
+            const wordBox = document.createElement('div');
+            wordBox.className = 'word-box';
+            wordBox.textContent = word;
+            wordBox.dataset.word = word; 
+            const cleanedWord = robustCleanString(word);
+            wordBox.dataset.cleanedWord = cleanedWord;
+            return wordBox;
+        }
+        
+        async function handleWordBoxClick() {
+            const wordElement = this; 
+            
+            if (wordElement.dataset.deleting === 'true' && !isAutoModeActive) { 
+                return; 
+            }
+            
+            stopAllAudio(); 
+
+            const isWODByData = isNonRemovable(wordElement.dataset.cleanedWord);
+            
+            if (isWODByData) {
+                wordElement.classList.add('vibrate');
+                setTimeout(() => wordElement.classList.remove('vibrate'), 300);
+                await playWordAudio(otherWordSoundFilename); 
+                await playWordAudio(wordElement.dataset.word, wordElement); 
+            } else { 
+                wordElement.dataset.deleting = 'true'; 
+
+                currentAudioSequence = currentAudioSequence.then(async () => {
+                    if (wordElement.dataset.deleting !== 'true') return; 
+                    await playWordAudio(deleteSoundFilename);
+                    if (wordElement.dataset.deleting !== 'true') return;
+                    await playWordAudio(wordElement.dataset.word, wordElement);
+                    if (wordElement.dataset.deleting !== 'true') return;
+                    
+                    wordElement.style.textDecoration = "line-through red 4px solid";
+                    await new Promise(r => setTimeout(r, 300)); 
+                    if (wordElement.dataset.deleting !== 'true') { 
+                        wordElement.style.textDecoration = ""; 
+                        return;
+                    }
+                    wordElement.style.opacity = '0';
+                    wordElement.style.transform = 'scale(0.8)';
+                    
+                    await new Promise(r => setTimeout(r, 300));
+                    if (wordElement.parentElement && wordElement.dataset.deleting === 'true') { 
+                        wordElement.remove();
+                    }
+
+                    const remainingNonWODs = Array.from(document.querySelectorAll('.word-column .word-box'))
+                                            .filter(wb => !isNonRemovable(wb.dataset.cleanedWord) && wb.style.opacity !== '0'); 
+                    if (remainingNonWODs.length === 0 && !isAutoModeActive) { 
+                        await prepareAndShowWodTransition();
+                    }
+                }).catch(() => {
+                    if(wordElement.dataset.deleting === 'true'){ 
+                        wordElement.style.textDecoration = "";
+                        wordElement.style.opacity = '1';
+                        wordElement.style.transform = 'scale(1)';
+                        wordElement.dataset.deleting = '';
+                    }
+                });
+            }
+        }
+        
+        async function processWordRemovalChunk(chunkOfWordElements) { // AUTO MODE
+            if (chunkOfWordElements.length === 0) return;
+            
+            currentAudioSequence = Promise.resolve(); 
+
+            for (const wordEl of chunkOfWordElements) {
+                if (wordEl.dataset.deleting || isNonRemovable(wordEl.dataset.cleanedWord) ) continue;
+                wordEl.dataset.deleting = 'true';
+
+                await playWordAudio(deleteSoundFilename);
+                await playWordAudio(wordEl.dataset.word, wordEl); 
+                wordEl.style.textDecoration = "line-through red 4px solid"; 
+            }
+            await new Promise(r => setTimeout(r, 700)); 
+
+            for (const wordEl of chunkOfWordElements) {
+                if (wordEl.dataset.deleting) { 
+                    wordEl.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+                    wordEl.style.opacity = '0';
+                    wordEl.style.transform = 'scale(0.8)';
+                }
+            }
+            await new Promise(r => setTimeout(r, 500)); 
+            chunkOfWordElements.forEach(el => { 
+                if(el.dataset.deleting && el.parentElement) el.remove(); 
+                el.dataset.deleting = ''; 
+            });
+
+            await playWordAudio(becameSoundFilename);
+            
+            const allCurrentlyVisibleWords = Array.from(document.querySelectorAll('.word-column .word-box'))
+                                                 .filter(wb => wb.style.opacity !== '0' && !wb.dataset.deleting);
+            for (const wordBox of allCurrentlyVisibleWords) {
+                await playWordAudio(wordBox.dataset.word, wordBox); 
+            }
+        }
+        
+        async function prepareAndShowWodTransition() {
+            await playWodPopupSound(); 
+            deduplicateAndStyleWODs(); 
+            // Play individual WOD audios *before* the pause and showing the popup
+            const displayedWODsElements = Array.from(document.querySelectorAll('.word-column .word-box.word-of-day-styled'));
+            for (const wodBox of displayedWODsElements) {
+                if (!isAutoModeActive && document.getElementById('wodTransitionScreen')?.classList.contains('hidden') === false && document.getElementById('autoModeBtn')) break; // If popup manually closed or auto stopped
+                await playWordAudio(wodBox.dataset.word, wodBox);
+            }
+            await new Promise(r => setTimeout(r, PAUSE_AFTER_WOD_INTRO)); 
+            showWodTransition(); 
+        }
+
+        function deduplicateAndStyleWODs() {
+            const wordColumn = document.getElementById('column1');
+            if (!wordColumn) return; 
+            const existingWordElements = Array.from(wordColumn.children);
+            const seenWODsCleaned = new Set();
+            
+            existingWordElements.forEach(wb => {
+                const cleaned = wb.dataset.cleanedWord;
+                if (isNonRemovable(cleaned)) {
+                    wb.dataset.isWod = "true"; 
+                    if (seenWODsCleaned.has(cleaned)) {
+                        wb.remove(); 
+                    } else {
+                        seenWODsCleaned.add(cleaned);
+                        wb.classList.add('word-of-day-styled'); 
+                    }
+                }
+            });
+        }
+
+
+        async function playWodPopupSound() {
+            if (wodSoundFilename) await playWordAudio(wodSoundFilename);
+        }
+        async function playSodPopupSound() {
+            if (sodSoundFilename) await playWordAudio(sodSoundFilename);
+        }
+        
+        async function showWodTransition() {
+            const wodPopup = document.getElementById('wodTransitionScreen');
+            const wodTextElement = document.getElementById('wodTransitionText');
+            const wodPopupTitle = document.getElementById('wodPopupTitle');
+            
+            const displayedWODs = Array.from(document.querySelectorAll('.word-column .word-box.word-of-day-styled'));
+            
+            if (wodPopupTitle) {
+                wodPopupTitle.textContent = displayedWODs.length === 1 ? "كلمة اليوم هي :" : "كلمات اليوم هي :";
+            }
+            wodTextElement.textContent = displayedWODs.map(wb => wb.dataset.word).join('، ');
+            
+            wodPopup.classList.remove('hidden'); 
+            
+            // Individual WOD audio is now played in prepareAndShowWodTransition, before this function is called.
+            // currentAudioSequence = Promise.resolve(); 
+            // for (const wodBox of displayedWODs) { ... } // THIS LOOP MOVED
+
+            const WODsForSyllableMode = nonRemovableWords.filter(wod => syllableConfig[robustCleanString(wod).toLowerCase()]);
+
+            if (WODsForSyllableMode.length === 0) { 
+                document.getElementById('mainControls').classList.add('hidden');
+                document.getElementById('wodTransitionControls').classList.add('hidden');
+                document.getElementById('syllableControls').classList.add('hidden');
+                
+                const finalLetters = [...new Set(nonRemovableWords
+                    .map(nrWord => syllableConfig[robustCleanString(nrWord).toLowerCase()]?.finalLetter)
+                    .filter(Boolean)
+                )];
+
+                await playSodPopupSound(); 
+                await new Promise(r => setTimeout(r, PAUSE_BEFORE_POPUP)); 
+
+                if (finalLetters.length > 0) { 
+                    for (const letter of finalLetters) { 
+                        if (!isAutoModeActive && document.getElementById('finalSoundScreen')?.classList.contains('hidden') === false && document.getElementById('autoModeBtn')) break;
+                        await playWordAudio(letter); 
+                        await new Promise(r => setTimeout(r, 200)); 
+                    }
+                }
+                showFinalSoundPopup(); 
+
+                if (finalLetters.length === 0) { 
+                    document.getElementById('finalControls').classList.remove('hidden');
+                }
+                return; 
+            }
+
+            document.getElementById('mainControls').classList.add('hidden');
+            document.getElementById('wodTransitionControls').classList.remove('hidden');
+            const startSyllableBtn = document.getElementById('startSyllableModeBtn');
+            if (startSyllableBtn) startSyllableBtn.classList.add('blink-attention');
+        }
+
+        function enterSyllableMode(showManualControls = false) {
+            document.getElementById('wodTransitionScreen').classList.add('hidden');
+            document.getElementById('wodTransitionControls').classList.add('hidden');
+            stopAllAudio(); 
+
+            if (showManualControls) {
+                document.getElementById('syllableControls').classList.remove('hidden');
+                 isAutoModeActive = false; 
+                 if(document.getElementById('autoModeBtn')) document.getElementById('autoModeBtn').textContent = 'اتعرف على كلمات اليوم';
+
+            } else {
+                document.getElementById('syllableControls').classList.add('hidden');
+            }
+            document.getElementById('wordModeContainer').classList.add('hidden');
+            const syllableContainer = document.getElementById('syllableModeContainer');
+            syllableContainer.innerHTML = '';
+            syllableContainer.classList.remove('hidden');
+            
+            const WODsForSyllableMode = nonRemovableWords.filter(wod => syllableConfig[robustCleanString(wod).toLowerCase()]);
+
+            if (WODsForSyllableMode.length === 0) {
+                playSodPopupSound().then(async () => {
+                    await new Promise(r => setTimeout(r, PAUSE_BEFORE_POPUP));
+                    const finalLettersInner = [...new Set(nonRemovableWords
+                        .map(nrWord => syllableConfig[robustCleanString(nrWord).toLowerCase()]?.finalLetter)
+                        .filter(Boolean)
+                    )];
+                    if (finalLettersInner.length > 0) {
+                        for (const letter of finalLettersInner) {
+                            await playWordAudio(letter); 
+                            await new Promise(r => setTimeout(r, 200)); 
+                        }
+                    }
+                    showFinalSoundPopup();
+                });
+                return;
+            }
+            
+            WODsForSyllableMode.forEach(dataWord => { 
+                let displayWord = dataWord.charAt(0).toUpperCase() + dataWord.slice(1);
+                const originalWordMatch = originalWords.find(ow => robustCleanString(ow).toLowerCase() === robustCleanString(dataWord).toLowerCase());
+                if (originalWordMatch) displayWord = originalWordMatch;
+
+                const card = createSyllableCard(displayWord, dataWord, showManualControls); 
+                syllableContainer.appendChild(card);
+            });
+            const exerciseModeDiv = document.getElementById('exerciseMode');
+            if (exerciseModeDiv && initialExerciseHeight > 0) {
+                exerciseModeDiv.style.minHeight = `${initialExerciseHeight}px`;
+            }
+        }
+
+        function createSyllableCard(displayWord, dataWord, showManualControls) { 
+            const card = document.createElement('div');
+            card.className = 'syllable-word-card';
+            card.dataset.word = dataWord; 
+            
+            const headerDiv = document.createElement('div'); 
+            headerDiv.className = 'syllable-word-card-header';
+            headerDiv.textContent = displayWord;
+            card.appendChild(headerDiv);
+
+            const boxesContainer = document.createElement('div');
+            boxesContainer.className = 'syllable-boxes-container';
+            card.appendChild(boxesContainer);
+            
+            const controlsDiv = document.createElement('div');
+            controlsDiv.className = 'controls';
+
+            if (showManualControls) {
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'btn btn-syllable';
+                removeBtn.textContent = 'Supprimer Syllabe';
+                removeBtn.onclick = () => removeSyllableFromCard(card);
+                controlsDiv.appendChild(removeBtn);
+
+                const replayBtn = document.createElement('button');
+                replayBtn.className = 'btn hidden';
+                replayBtn.textContent = '🔄 Rejouer';
+                replayBtn.onclick = () => resetSyllableCard(card);
+                controlsDiv.appendChild(replayBtn);
+            }
+            card.appendChild(controlsDiv);
+            
+            populateSyllablesInCard(card, showManualControls);
+            return card;
+        }
+
+        function populateSyllablesInCard(card, showManualControls) {
+            const container = card.querySelector('.syllable-boxes-container');
+            container.innerHTML = ''; 
+            const dataWord = card.dataset.word; 
+            const config = syllableConfig[robustCleanString(dataWord).toLowerCase()]; 
+            if (!config || !config.syllables) {
+                container.textContent = "Error: Config manquante.";
+                return;
+            }
+            
+            config.syllables.forEach((syllableText) => {
+                const syllableBox = document.createElement('div');
+                syllableBox.className = 'syllable-box';
+                syllableBox.textContent = syllableText; 
+                
+                if (config.finalLetter && robustCleanString(syllableText).toLowerCase().includes(config.finalLetter)) {
+                    syllableBox.classList.add('contains-final-letter');
+                }
+                
+                if (showManualControls) {
+                    syllableBox.addEventListener('click', function() { 
+                         if (this.dataset.deleting === 'true' || this.dataset.finalizing === 'true') return;
+                        stopAllAudio(); 
+                        removeSyllableElement(this); 
+                    });
+                }
+                container.appendChild(syllableBox);
+            });
+        }
+        
+        async function removeSyllableElement(syllableElement) {
+            if (syllableElement.dataset.deleting === 'true' || syllableElement.dataset.finalizing === 'true') return; 
+
+            const card = syllableElement.closest('.syllable-word-card');
+            const wordData = card.dataset.word;
+            const config = syllableConfig[robustCleanString(wordData).toLowerCase()];
+            const finalLetterForWord = config ? config.finalLetter : null;
+
+            const remainingSyllableElements = Array.from(card.querySelectorAll('.syllable-box:not([data-deleting="true"]):not([data-finalizing="true"])'));
+            
+            let shouldBreakdown = false;
+            if (remainingSyllableElements.length === 1 && remainingSyllableElements[0] === syllableElement) { 
+                shouldBreakdown = true;
+            } else if (finalLetterForWord && robustCleanString(syllableElement.textContent).toLowerCase().includes(finalLetterForWord)) {
+                const otherSyllables = remainingSyllableElements.filter(sb => sb !== syllableElement);
+                if (otherSyllables.length === 0 || otherSyllables.every(sb => robustCleanString(sb.textContent).toLowerCase().includes(finalLetterForWord))) {
+                    shouldBreakdown = true;
+                }
+            }
+
+            if (shouldBreakdown) {
+                await beginFinalLetterBreakdown(syllableElement, false); 
+                checkAllSyllableCardsComplete();
+                return;
+            }
+
+            if (finalLetterForWord && robustCleanString(syllableElement.textContent).toLowerCase().includes(finalLetterForWord)) {
+                const otherNonFinalLetterSyllablesExist = remainingSyllableElements.some(
+                    sb => sb !== syllableElement && !robustCleanString(sb.textContent).toLowerCase().includes(finalLetterForWord)
+                );
+                if (otherNonFinalLetterSyllablesExist) {
+                     syllableElement.classList.add('vibrate');
+                     setTimeout(()=> syllableElement.classList.remove('vibrate'), 300);
+                     return; 
+                }
+            }
+
+            syllableElement.dataset.deleting = 'true';
+            await playWordAudio(deleteSoundFilename);
+            await playWordAudio(syllableElement.textContent, syllableElement); 
+            syllableElement.classList.add('is-deleting'); 
+            
+            await new Promise(r => setTimeout(r, 700)); 
+            
+            syllableElement.style.opacity = '0';
+            syllableElement.style.transform = 'scale(0.8)';
+            await new Promise(r => setTimeout(r, 300));
+            if(syllableElement.parentElement) syllableElement.remove();
+        }
+
+        async function checkAllSyllableCardsComplete() {
+            if (isAutoModeActive) return; 
+
+            const allCards = document.querySelectorAll('.syllable-word-card');
+            let allComplete = true;
+            for (const card of allCards) {
+                const syllableBoxesContainer = card.querySelector('.syllable-boxes-container');
+                if (!syllableBoxesContainer) { allComplete = false; break; }
+
+                const letterOfDayBox = syllableBoxesContainer.querySelector('.syllable-box.letter-of-day');
+                const individualLetterBoxes = syllableBoxesContainer.querySelectorAll('.letter-in-syllable-box');
+                
+                if (!letterOfDayBox && individualLetterBoxes.length > 0) { 
+                    allComplete = false; break;
+                }
+                if (!letterOfDayBox && individualLetterBoxes.length === 0) { 
+                     const remainingNormalSyllables = syllableBoxesContainer.querySelectorAll('.syllable-box');
+                     if(remainingNormalSyllables.length > 0) {allComplete = false; break;}
+                }
+            }
+
+            if (allComplete && allCards.length > 0) {
+                await playSodPopupSound();
+                await new Promise(r => setTimeout(r, PAUSE_BEFORE_POPUP));
+                const finalLettersInner = [...new Set(nonRemovableWords
+                    .map(nrWord => syllableConfig[robustCleanString(nrWord).toLowerCase()]?.finalLetter)
+                    .filter(Boolean)
+                )];
+                if (finalLettersInner.length > 0) {
+                    for (const letter of finalLettersInner) {
+                        await playWordAudio(letter); 
+                        await new Promise(r => setTimeout(r, 200)); 
+                    }
+                }
+                showFinalSoundPopup();
+            }
+        }
+
+
+        function removeSyllableFromCard(card) { 
+            stopAllAudio(); 
+            const wordData = card.dataset.word;
+            const config = syllableConfig[robustCleanString(wordData).toLowerCase()];
+            const finalLetterForWord = config ? config.finalLetter : null;
+
+            const activeSyllables = Array.from(card.querySelectorAll('.syllable-box:not([data-deleting="true"]):not([data-finalizing="true"])'));
+            
+            let syllableToRemove = null;
+            if (finalLetterForWord) {
+                syllableToRemove = activeSyllables.find(sb => !robustCleanString(sb.textContent).toLowerCase().includes(finalLetterForWord));
+            }
+
+            if (!syllableToRemove && activeSyllables.length > 0) { 
+                syllableToRemove = activeSyllables[0];
+            }
+            
+            if (syllableToRemove) {
+                removeSyllableElement(syllableToRemove); 
+            }
+        }
+        
+        async function beginFinalLetterBreakdown(originalSyllableElement, skipInitialPlayFullSyllable = false) {
+            const card = originalSyllableElement.closest('.syllable-word-card');
+            if (!card || originalSyllableElement.dataset.finalizing === 'true') { return; } 
+            
+            stopAllAudio(); 
+            originalSyllableElement.dataset.finalizing = 'true'; 
+
+            const dataWord = card.dataset.word; 
+            const config = syllableConfig[robustCleanString(dataWord).toLowerCase()];
+            if (!config) { originalSyllableElement.dataset.finalizing = ''; return; } 
+            const finalLetterSOD = config.finalLetter; 
+
+            if (!skipInitialPlayFullSyllable) {
+                await playWordAudio(originalSyllableElement.textContent, originalSyllableElement);
+                await new Promise(r => setTimeout(r, 300)); 
+            }
+            
+            const syllableTextOriginal = originalSyllableElement.textContent;
+            const syllableBoxesContainer = originalSyllableElement.parentElement;
+            
+            if (originalSyllableElement.parentElement) {
+                originalSyllableElement.remove(); 
+            }
+
+            const fragment = document.createDocumentFragment();
+            let sodCharBoxElement = null; 
+            let hasRemovableChars = false;
+            let currentIndex = 0;
+
+            while(currentIndex < syllableTextOriginal.length) {
+                const charBox = document.createElement('div');
+                charBox.className = 'letter-in-syllable-box';
+                
+                let currentSegment = "";
+                let isSODSegment = false;
+
+                if (finalLetterSOD && syllableTextOriginal.substring(currentIndex).toLowerCase().startsWith(finalLetterSOD.toLowerCase())) {
+                    currentSegment = syllableTextOriginal.substring(currentIndex, currentIndex + finalLetterSOD.length);
+                    isSODSegment = true;
+                } else { 
+                    currentSegment = syllableTextOriginal[currentIndex];
+                }
+                
+                charBox.textContent = currentSegment;
+                charBox.dataset.char = currentSegment; 
+
+                if (isSODSegment) {
+                    charBox.classList.add('is-sod');
+                    sodCharBoxElement = charBox;
+                    currentIndex += finalLetterSOD.length; 
+                } else {
+                    charBox.addEventListener('click', handleRemovableCharClick);
+                    hasRemovableChars = true;
+                    currentIndex++;
+                }
+                fragment.appendChild(charBox);
+            }
+            syllableBoxesContainer.appendChild(fragment);
+
+            if (isAutoModeActive) {
+                const charsToRemove = Array.from(syllableBoxesContainer.querySelectorAll('.letter-in-syllable-box:not(.is-sod)'));
+                for (const charBox of charsToRemove) {
+                    if (!isAutoModeActive) break; 
+                    await handleRemovableCharClick.call(charBox, true); 
+                }
+                if (isAutoModeActive && sodCharBoxElement && syllableBoxesContainer.querySelectorAll('.letter-in-syllable-box:not(.is-sod)').length === 0) {
+                    await finalizeSODBox(sodCharBoxElement, finalLetterSOD);
+                }
+
+            } else {
+                if (!hasRemovableChars && sodCharBoxElement) { 
+                    await finalizeSODBox(sodCharBoxElement, finalLetterSOD);
+                    checkAllSyllableCardsComplete();
+                }
+            }
+            
+            const manualRemoveBtn = card.querySelector('.btn-syllable');
+            const replayBtn = card.querySelector('.controls .btn:not(.btn-syllable)'); 
+            if (manualRemoveBtn) manualRemoveBtn.disabled = true;
+            if (replayBtn) replayBtn.classList.remove('hidden');
+        }
+
+        async function handleRemovableCharClick(isAuto = false) {
+            const charBox = this; 
+            if (charBox.dataset.deleting === 'true') return;
+            charBox.dataset.deleting = 'true';
+            
+            if(!isAuto) stopAllAudio(); 
+
+            charBox.classList.add('is-deleting-char');
+            await playWordAudio(deleteSoundFilename);
+            await playWordAudio(charBox.dataset.char, charBox); 
+            
+            await new Promise(r => setTimeout(r, 700));
+            charBox.style.opacity = '0';
+            charBox.style.transform = 'scale(0.8)';
+            await new Promise(r => setTimeout(r, 300));
+            if (charBox.parentElement) charBox.remove();
+
+            const syllableBoxesContainer = charBox.closest('.syllable-boxes-container');
+            if (syllableBoxesContainer) {
+                const remainingChars = syllableBoxesContainer.querySelectorAll('.letter-in-syllable-box:not(.is-sod)');
+                const sodBoxElement = syllableBoxesContainer.querySelector('.letter-in-syllable-box.is-sod');
+                if (remainingChars.length === 0 && sodBoxElement) {
+                    const card = syllableBoxesContainer.closest('.syllable-word-card');
+                    const config = syllableConfig[robustCleanString(card.dataset.word).toLowerCase()];
+                    await finalizeSODBox(sodBoxElement, config.finalLetter); 
+                    checkAllSyllableCardsComplete(); 
+                }
+            }
+        }
+
+        // REVISED: finalizeSODBox includes became.mp3 + SOD sound
+        async function finalizeSODBox(sodCharBox, finalLetterSOD) { 
+            if (!sodCharBox || sodCharBox.classList.contains('letter-of-day')) return; 
+
+            const container = sodCharBox.parentElement;
+            if (container) {
+                container.querySelectorAll('.letter-in-syllable-box:not(.is-sod)').forEach(b => b.remove());
+            }
+            
+            await playWordAudio(becameSoundFilename); 
+            await new Promise(r => setTimeout(r, 150)); 
+
+            sodCharBox.className = 'syllable-box letter-of-day'; 
+            sodCharBox.textContent = finalLetterSOD.toUpperCase(); 
+            sodCharBox.style.fontSize = ''; 
+            sodCharBox.style.padding = '';  
+            sodCharBox.onclick = null; 
+
+            const audioPlayer = document.createElement('button');
+            audioPlayer.innerHTML = '🔊';
+            audioPlayer.className = 'btn btn-speak final-letter-player';
+            audioPlayer.style.opacity = '0'; 
+            audioPlayer.onclick = (e) => { 
+                e.stopPropagation(); 
+                if(isAutoModeActive && activeAudioObject) return; 
+                stopAllAudio(); 
+                playWordAudio(finalLetterSOD, sodCharBox); 
+            };
+            sodCharBox.appendChild(audioPlayer);
+            
+            await playWordAudio(finalLetterSOD, sodCharBox); 
+            audioPlayer.style.opacity = '1'; 
+        }
+        
+        function resetSyllableCard(card) {
+            stopAllAudio(); 
+            const showManualControls = card.querySelector('.btn-syllable') !== null;
+            populateSyllablesInCard(card, showManualControls); 
+            const manualRemoveBtn = card.querySelector('.btn-syllable');
+            if (manualRemoveBtn) manualRemoveBtn.disabled = false;
+            const replayBtn = card.querySelector('.controls .btn:not(.btn-syllable)');
+            if (replayBtn) replayBtn.classList.add('hidden');
+        }
+
+        function resetWords(isInitialSetup = false) { 
+            stopAllAudio(); 
+            
+            if (originalWords.length === 0 && document.getElementById('textEditor')) { 
+                 populateOriginalWordsFromSource( (typeof preloadedText !== 'undefined') ? preloadedText : document.getElementById('textEditor').value || "" );
+            } else if (originalWords.length === 0 && typeof preloadedText !== 'undefined') {
+                 populateOriginalWordsFromSource(preloadedText);
+            }
+            parseConfigData();
+
+            const exerciseModeDiv = document.getElementById('exerciseMode');
+            const wordModeContainer = document.getElementById('wordModeContainer');
+            const syllableModeContainer = document.getElementById('syllableModeContainer');
+            const column = document.getElementById('column1');
+
+            if (exerciseModeDiv) {
+                if (isInitialSetup || initialExerciseHeight === 0) {
+                    exerciseModeDiv.style.minHeight = 'auto'; 
+                    if (wordModeContainer && column) {
+                        exerciseModeDiv.classList.remove('hidden');
+                        wordModeContainer.classList.remove('hidden');
+                        requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                                let baseHeight = column.scrollHeight;
+                                const controlsHeight = document.getElementById('mainControls')?.offsetHeight || 0;
+                                initialExerciseHeight = baseHeight + controlsHeight + 60; 
+                                if (initialExerciseHeight < 300) initialExerciseHeight = 300; 
+                                exerciseModeDiv.style.minHeight = `${initialExerciseHeight}px`;
+                            });
+                        });
+                    }
+                } else if (initialExerciseHeight > 0) {
+                    exerciseModeDiv.style.minHeight = `${initialExerciseHeight}px`;
+                }
+            }
+
+
+            if(wordModeContainer) wordModeContainer.classList.remove('hidden');
+            if(syllableModeContainer) syllableModeContainer.classList.add('hidden');
+            if(document.getElementById('wodTransitionScreen')) document.getElementById('wodTransitionScreen').classList.add('hidden');
+            if(document.getElementById('finalSoundScreen')) document.getElementById('finalSoundScreen').classList.add('hidden');
+            
+            const mainControls = document.getElementById('mainControls');
+            if(mainControls) {
+                mainControls.classList.remove('hidden');
+                const autoBtn = mainControls.querySelector('#autoModeBtn');
+                if(autoBtn) autoBtn.classList.add('blink-attention');
+            }
+            if(document.getElementById('wodTransitionControls')) document.getElementById('wodTransitionControls').classList.add('hidden');
+            if(document.getElementById('syllableControls')) document.getElementById('syllableControls').classList.add('hidden');
+            if(document.getElementById('finalControls')) document.getElementById('finalControls').classList.add('hidden');
+            
+            if(column) column.innerHTML = '';
+
+            if(originalWords && originalWords.length > 0 && column) {
+                originalWords.forEach((word) => { 
+                    const wordBox = createWordBox(word); 
+                    column.appendChild(wordBox);
+                });
+            }
+            document.querySelectorAll('.word-column .word-box').forEach(wb => wb.addEventListener('click', handleWordBoxClick));
+
+            const autoBtnReset = document.getElementById('autoModeBtn');
+            if (autoBtnReset && isAutoModeActive) { 
+                isAutoModeActive = false; 
+                autoBtnReset.textContent = 'اتعرف على كلمات اليوم';
+            }
+            document.querySelectorAll('#mainControls .btn').forEach(b => b.disabled = false); 
+        }
+
+        function isNonRemovable(cleanedWord) { 
+            if (nonRemovableWords.length === 0 && (typeof preloadedWordOfDay !== 'undefined' || document.getElementById('wordOfDay'))) {
+                parseConfigData();
+            }
+            return nonRemovableWords.includes(cleanedWord.toLowerCase()); 
+        }
+        
+        function toggleAutoMode() {
+            const btn = document.getElementById('autoModeBtn');
+            isAutoModeActive = !isAutoModeActive;
+            
+            if (btn) {
+                btn.textContent = isAutoModeActive ? '⏹️' : 'اتعرف على كلمات اليوم';
+                if (isAutoModeActive) {
+                    btn.classList.remove('blink-attention');
+                } else {
+                    if(!document.getElementById('wordModeContainer').classList.contains('hidden')){
+                       btn.classList.add('blink-attention');
+                    }
+                }
+            }
+            
+            if (isAutoModeActive) {
+                initialPhrasePlayedForAutoMode = false; 
+                let sourceTextForAuto = "";
+                if (document.getElementById('textEditor')) {
+                    sourceTextForAuto = document.getElementById('textEditor').value;
+                } else if (typeof preloadedText !== 'undefined') {
+                    sourceTextForAuto = preloadedText;
+                }
+
+                if (originalWords.length === 0 && sourceTextForAuto.trim()) {
+                    populateOriginalWordsFromSource(sourceTextForAuto);
+                    parseConfigData(); 
+                }
+                stopAllAudio(); 
+
+                const startSyllableBtn = document.getElementById('startSyllableModeBtn');
+                if(startSyllableBtn) startSyllableBtn.classList.remove('blink-attention');
+
+
+                if (!document.getElementById('wordModeContainer').classList.contains('hidden')) {
+                    runAutoModeStep();
+                } else if (!document.getElementById('syllableModeContainer').classList.contains('hidden')) {
+                    startAutoSyllableMode();
+                } else if (!document.getElementById('wodTransitionScreen').classList.contains('hidden')) {
+                    document.getElementById('wodTransitionScreen').classList.add('hidden');
+                    startAutoSyllableMode();
+                } else if (!document.getElementById('finalSoundScreen').classList.contains('hidden')) {
+                    startFullDemo(); 
+                }
+            } else {
+                stopAutoMode(); 
+            }
+        }
+
+        async function runAutoModeStep() {
+            if (!isAutoModeActive) return;
+            document.querySelectorAll('#mainControls .btn:not(#autoModeBtn)').forEach(b => b.disabled = true);
+
+            if (!initialPhrasePlayedForAutoMode && phraseSoundFilename) {
+                await playWordAudio(phraseSoundFilename); 
+                initialPhrasePlayedForAutoMode = true;
+                if (!isAutoModeActive) { stopAutoMode(); return; }
+                await new Promise(r => setTimeout(r, 700)); 
+            }
+
+            let allRemovableWordElements = Array.from(document.querySelectorAll('.word-column .word-box'))
+                                             .filter(wb => !isNonRemovable(wb.dataset.cleanedWord) && wb.style.opacity !== '0' && !wb.dataset.deleting);
+            
+            while(allRemovableWordElements.length > 0 && isAutoModeActive) { 
+                const currentLapSize = Math.min(wordsPerLap, allRemovableWordElements.length);
+                let chunkToProcess = [];
+                
+                let availableIndices = Array.from(Array(allRemovableWordElements.length).keys());
+                for(let i=0; i < currentLapSize; i++){
+                    if(availableIndices.length === 0) break;
+                    const randomIndexInAvailable = Math.floor(Math.random() * availableIndices.length);
+                    const originalIndex = availableIndices.splice(randomIndexInAvailable, 1)[0];
+                    chunkToProcess.push(allRemovableWordElements[originalIndex]);
+                }
+                
+                await processWordRemovalChunk(chunkToProcess); 
+                if (!isAutoModeActive) { stopAutoMode(); return; } 
+                await new Promise(r => setTimeout(r, 300)); 
+
+                allRemovableWordElements = Array.from(document.querySelectorAll('.word-column .word-box'))
+                                             .filter(wb => !isNonRemovable(wb.dataset.cleanedWord) && wb.style.opacity !== '0' && !wb.dataset.deleting);
+            }
+            
+            if (isAutoModeActive) { 
+                await prepareAndShowWodTransition();
+            } else { 
+                 stopAutoMode(); 
+            }
+        }
+        
+        async function startAutoSyllableMode() {
+            if (!isAutoModeActive) {
+                isAutoModeActive = true;
+                const autoBtn = document.getElementById('autoModeBtn');
+                if (autoBtn) {
+                    autoBtn.textContent = '⏹️';
+                    autoBtn.classList.remove('blink-attention');
+                }
+            }
+             const startSyllableBtn = document.getElementById('startSyllableModeBtn');
+             if(startSyllableBtn) startSyllableBtn.classList.remove('blink-attention');
+
+
+            enterSyllableMode(false); 
+            await new Promise(r => setTimeout(r, 1000)); 
+            
+            document.getElementById('wodTransitionControls').classList.add('hidden');
+            document.getElementById('syllableControls').classList.add('hidden'); 
+
+            const cards = document.querySelectorAll('.syllable-word-card');
+            for(const card of cards) {
+                if (!isAutoModeActive) { 
+                     enterSyllableMode(true); 
+                     return;
+                }
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                card.classList.add('is-active');
+                await processCardAutomatically(card);
+                card.classList.remove('is-active');
+                if (!isAutoModeActive) { enterSyllableMode(true); return; } 
+                await new Promise(r => setTimeout(r, 1000)); 
+            }
+
+            if (isAutoModeActive) { 
+                await playSodPopupSound();
+                await new Promise(r => setTimeout(r, PAUSE_BEFORE_POPUP));
+                const finalLettersInner = [...new Set(nonRemovableWords
+                    .map(nrWord => syllableConfig[robustCleanString(nrWord).toLowerCase()]?.finalLetter)
+                    .filter(Boolean)
+                )];
+                if (finalLettersInner.length > 0) {
+                    for (const letter of finalLettersInner) {
+                         if (!isAutoModeActive) break; 
+                        await playWordAudio(letter); 
+                        await new Promise(r => setTimeout(r, 200)); 
+                    }
+                }
+                if (isAutoModeActive) showFinalSoundPopup(); 
+            } else { 
+                if (document.querySelectorAll('.syllable-word-card').length > 0 && 
+                    document.getElementById('finalSoundScreen').classList.contains('hidden')) {
+                     enterSyllableMode(true); 
+                }
+            }
+        }
+
+        async function processCardAutomatically(card) {
+            const dataWord = card.dataset.word; 
+            const config = syllableConfig[robustCleanString(dataWord).toLowerCase()];
+            if (!config) return;
+            const finalLetterForWord = config.finalLetter;
+
+            if (!isAutoModeActive) return;
+            await playWordAudio(dataWord); 
+            await new Promise(r => setTimeout(r, 1000));
+            
+            if (!isAutoModeActive) return;
+            for(const syllableText of config.syllables) { 
+                if (!isAutoModeActive) return;
+                let targetSyllableBoxForAuto = null;
+                const allSyllableBoxesAuto = card.querySelectorAll('.syllable-box:not([data-deleting="true"]):not([data-finalizing="true"])');
+                for (const box of allSyllableBoxesAuto) {
+                    if (box.textContent === syllableText) {
+                        targetSyllableBoxForAuto = box;
+                        break;
+                    }
+                }
+                await playWordAudio(syllableText, targetSyllableBoxForAuto); 
+                await new Promise(r => setTimeout(r, 300)); 
+            }
+            if (!isAutoModeActive) return;
+            await new Promise(r => setTimeout(r, 700)); 
+
+            let processedOneIteration;
+            do {
+                processedOneIteration = false;
+                if (!isAutoModeActive) return;
+                let syllableBoxesInCard = Array.from(card.querySelectorAll('.syllable-box:not([data-deleting="true"]):not([data-finalizing="true"])'));
+                if (syllableBoxesInCard.length <= 1) break; 
+
+                let syllableToProcess = syllableBoxesInCard.find(sb => finalLetterForWord && !robustCleanString(sb.textContent).toLowerCase().includes(finalLetterForWord));
+
+                if (!syllableToProcess && syllableBoxesInCard.length > 1) { 
+                    syllableToProcess = syllableBoxesInCard[0];
+                }
+
+                if (syllableToProcess) {
+                    syllableToProcess.dataset.deleting = 'true';
+                    syllableToProcess.classList.add('is-deleting'); 
+                    currentAudioSequence = Promise.resolve(); 
+
+                    await playWordAudio(deleteSoundFilename);
+                    await playWordAudio(syllableToProcess.textContent, syllableToProcess);
+                    await new Promise(r => setTimeout(r, 700)); 
+                    
+                    syllableToProcess.style.opacity = '0';
+                    syllableToProcess.style.transform = 'scale(0.8)';
+                    await new Promise(r => setTimeout(r, 500));
+                    if(syllableToProcess.parentElement) syllableToProcess.remove();
+
+                    await playWordAudio(becameSoundFilename);
+                    const syllablesToPlayAfter = Array.from(card.querySelectorAll('.syllable-box:not([data-deleting="true"]):not([data-finalizing="true"])'))
+                                                  .filter(sb => sb.style.opacity !== '0');
+                    for (const sb of syllablesToPlayAfter) {
+                        if (!isAutoModeActive) break; 
+                        await playWordAudio(sb.textContent, sb);
+                    }
+                    processedOneIteration = true;
+                }
+                if (processedOneIteration && isAutoModeActive) await new Promise(r => setTimeout(r, 700)); 
+
+            } while (processedOneIteration && isAutoModeActive);
+
+
+            if (!isAutoModeActive) return; 
+
+            const lastSyllable = card.querySelector('.syllable-box:not([data-deleting="true"]):not([data-finalizing="true"])');
+            if (lastSyllable) {
+                await beginFinalLetterBreakdown(lastSyllable, true); 
+            }
+        }
+
+        function showFinalSoundPopup() {
+            if (isAutoModeActive) { 
+                stopAutoMode(); 
+            }
+            
+            const popup = document.getElementById('finalSoundScreen');
+            const sodPopupTitle = document.getElementById('sodPopupTitle'); 
+            const finalLetters = [...new Set(nonRemovableWords
+                .map(nrWord => syllableConfig[robustCleanString(nrWord).toLowerCase()]?.finalLetter)
+                .filter(Boolean)
+            )]; 
+            
+            if(sodPopupTitle) { 
+                sodPopupTitle.textContent = finalLetters.length === 1 ? "صوت اليوم هو :" : "أصوات اليوم هي :";
+            }
+            popup.querySelector('#finalSoundText').textContent = finalLetters.join('، ') || "Aucun son final configuré.";
+            const formsContainer = popup.querySelector('.letter-forms-container');
+            formsContainer.innerHTML = ''; 
+            finalLetters.forEach(letter => {
+                const group = document.createElement('div');
+                group.className = 'letter-form-group';
+                let cursiveMaj = letter.length > 0 ? letter.charAt(0).toUpperCase() + letter.slice(1).toLowerCase() : '';
+
+                group.innerHTML = 
+                    `<div class="form-type-maj"><div class="letter-form cursive">${cursiveMaj}</div><div class="letter-form-label">Cursive Majuscule</div></div>` +
+                    `<div class="form-type-min"><div class="letter-form cursive">${letter.toLowerCase()}</div><div class="letter-form-label">Cursive Minuscule</div></div>` +
+                    `<div class="form-type-maj"><div class="letter-form">${letter.toUpperCase()}</div><div class="letter-form-label">Script Majuscule</div></div>` +
+                    `<div class="form-type-min"><div class="letter-form">${letter.toLowerCase()}</div><div class="letter-form-label">Script Minuscule</div></div>`;
+                formsContainer.appendChild(group);
+            });
+
+            document.getElementById('wordModeContainer').classList.add('hidden');
+            document.getElementById('syllableModeContainer').classList.add('hidden'); 
+            document.getElementById('mainControls').classList.add('hidden');
+            document.getElementById('wodTransitionControls').classList.add('hidden');
+            document.getElementById('syllableControls').classList.add('hidden');
+            
+            document.getElementById('finalControls').classList.remove('hidden');
+            document.querySelectorAll('#finalControls .btn').forEach(b => b.disabled = false); 
+            popup.classList.remove('hidden');
+
+            const exerciseModeDiv = document.getElementById('exerciseMode');
+            if (exerciseModeDiv && initialExerciseHeight > 0) {
+                exerciseModeDiv.style.minHeight = `${initialExerciseHeight}px`;
+            }
+        }
+
+        async function replaySyllableMode() { 
+            document.getElementById('finalSoundScreen').classList.add('hidden');
+            document.getElementById('finalControls').classList.add('hidden');
+            isAutoModeActive = true; 
+            const autoBtn = document.getElementById('autoModeBtn');
+            if(autoBtn) autoBtn.textContent = '⏹️';
+            stopAllAudio(); 
+            await startAutoSyllableMode();
+        }
+
+        async function startFullDemo() {
+            let sourceTextForDemo = "";
+            if (document.getElementById('textEditor')) {
+                sourceTextForDemo = document.getElementById('textEditor').value;
+            } else if (typeof preloadedText !== 'undefined') {
+                sourceTextForDemo = preloadedText;
+            }
+
+            if (!sourceTextForDemo.trim()) {
+                alert("Veuillez saisir du texte ou assurer que preloadedText est disponible pour lancer la démo.");
+                return;
+            }
+            populateOriginalWordsFromSource(sourceTextForDemo);
+            parseConfigData();
+            resetWords(true); 
+            await new Promise(r => setTimeout(r, 300));
+            
+            isAutoModeActive = true; 
+            initialPhrasePlayedForAutoMode = false;
+            if (document.getElementById('wordsPerLap')) {
+                wordsPerLap = parseInt(document.getElementById('wordsPerLap').value, 10) || 1;
+            } else if (typeof preloadedWordsPerLap !== 'undefined') { 
+                wordsPerLap = preloadedWordsPerLap;
+            } else {
+                wordsPerLap = 1; 
+            }
+            if (wordsPerLap < 1) wordsPerLap = 1;
+            
+            stopAllAudio(); 
+
+            const autoBtn = document.getElementById('autoModeBtn');
+            if(autoBtn) {
+                autoBtn.textContent = '⏹️';
+                autoBtn.classList.remove('blink-attention');
+            }
+             const startSyllableBtn = document.getElementById('startSyllableModeBtn');
+             if(startSyllableBtn) startSyllableBtn.classList.remove('blink-attention');
+
+
+            document.querySelectorAll('#mainControls .btn:not(#autoModeBtn), #wodTransitionControls .btn, #syllableControls .btn, #finalControls .btn').forEach(b => b.disabled = true);
+            if(autoBtn) autoBtn.disabled = false; 
+
+            await runAutoModeStep(); 
+
+            if (isAutoModeActive) { 
+                const WODsForSyllableMode = nonRemovableWords.filter(wod => syllableConfig[robustCleanString(wod).toLowerCase()]);
+                if (WODsForSyllableMode.length > 0) {
+                     document.getElementById('mainControls').classList.add('hidden');
+                     document.getElementById('wodTransitionControls').classList.add('hidden'); 
+                     document.getElementById('wodTransitionScreen').classList.add('hidden');
+                     await startAutoSyllableMode(); 
+                } else { 
+                    if (document.getElementById('finalSoundScreen').classList.contains('hidden')) { 
+                        const finalLetters = [...new Set(nonRemovableWords
+                            .map(nrWord => syllableConfig[robustCleanString(nrWord).toLowerCase()]?.finalLetter)
+                            .filter(Boolean)
+                        )];
+                        
+                        await playSodPopupSound();
+                        await new Promise(r => setTimeout(r, PAUSE_BEFORE_POPUP));
+
+                        if (finalLetters.length > 0) {
+                            for (const letter of finalLetters) {
+                                if(!isAutoModeActive) break;
+                                await playWordAudio(letter); 
+                                await new Promise(r => setTimeout(r, 200)); 
+                            }
+                        }
+                        if(isAutoModeActive) showFinalSoundPopup();
+                        else stopAutoMode(); 
+                        
+                        if (finalLetters.length === 0 && isAutoModeActive) { 
+                            document.getElementById('finalControls').classList.remove('hidden');
+                            document.querySelectorAll('#finalControls .btn').forEach(b => b.disabled = false); 
+                            stopAutoMode(); 
+                        }
+                    }
+                }
+            }
+        }
+
+        function exportHtmlPage() {
+            const currentText = document.getElementById('textEditor').value;
+            if (!currentText.trim()) {
+                alert('Veuillez saisir du texte pour exporter !'); return;
+            }
+            const currentWordOfDay = document.getElementById('wordOfDay').value;
+            const currentSyllableConfig = document.getElementById('syllableConfig').value;
+            const currentAudioFolderPath = document.getElementById('audioFolderPath').value;
+            const currentAudioFileExtension = document.getElementById('audioFileExtension').value;
+            const currentPhraseSoundName = document.getElementById('phraseSoundName').value.trim() || 'phrase';
+            const currentDeleteSoundName = document.getElementById('deleteSoundName').value.trim() || 'delete';
+            const currentBecameSoundName = document.getElementById('becameSoundName').value.trim() || 'became';
+            const currentWodSoundName = document.getElementById('wodSoundName').value.trim() || 'wod';
+            const currentSodSoundName = document.getElementById('sodSoundName').value.trim() || 'sod';
+            const currentOtherWordSoundName = document.getElementById('otherWordSoundName').value.trim() || 'otherword';
+
+            const currentWordsPerLap = parseInt(document.getElementById('wordsPerLap').value, 10) || 1;
+            const currentDialoguePage = document.getElementById('dialoguePageNameInput')?.value || 'dialogue.html';
+
+            const styleContent = document.querySelector('style').innerHTML;
+            let scriptContent = document.getElementById('mainScript').innerHTML;
+            scriptContent = scriptContent.replace(/let\s+wordsPerLap\s*=\s*1;/g, `let wordsPerLap = ${currentWordsPerLap}; const preloadedWordsPerLap = ${currentWordsPerLap};`);
+            scriptContent = scriptContent.replace(/let\s+phraseSoundFilename\s*=\s*'phrase';/g, `let phraseSoundFilename = '${currentPhraseSoundName}';`);
+            scriptContent = scriptContent.replace(/let\s+deleteSoundFilename\s*=\s*'delete';/g, `let deleteSoundFilename = '${currentDeleteSoundName}';`);
+            scriptContent = scriptContent.replace(/let\s+becameSoundFilename\s*=\s*'became';/g, `let becameSoundFilename = '${currentBecameSoundName}';`);
+            scriptContent = scriptContent.replace(/let\s+wodSoundFilename\s*=\s*'wod';/g, `let wodSoundFilename = '${currentWodSoundName}';`);
+            scriptContent = scriptContent.replace(/let\s+sodSoundFilename\s*=\s*'sod';/g, `let sodSoundFilename = '${currentSodSoundName}';`);
+            scriptContent = scriptContent.replace(/let\s+otherWordSoundFilename\s*=\s*'otherword';/g, `let otherWordSoundFilename = '${currentOtherWordSoundName}';`);
+            scriptContent = scriptContent.replace(/let\s+initialExerciseHeight\s*=\s*0;/g, `let initialExerciseHeight = 0;`);
+            
+            const tempDialogueBtn = document.getElementById('btnBackToDialoguePage');
+            if (tempDialogueBtn) { tempDialogueBtn.setAttribute('data-page', currentDialoguePage); }
+            let exerciseModeHtml = document.getElementById('exerciseMode').outerHTML;
+            exerciseModeHtml = exerciseModeHtml.replace(/<button class="btn btn-back" onclick="backToEditor\(\)">← Retour à l'Éditeur<\/button>/g, '');
+            exerciseModeHtml = exerciseModeHtml.replace('class="exercise-mode hidden"', 'class="exercise-mode"'); 
+
+            const htmlFileContent = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercice de Mots Français (Exporté)</title>
+    <style>
+        ${styleContent}
+        .editor-mode { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header"><h1>اتعرف على صوت اليوم</h1><p>Complétez l'exercice interactif.</p></div>
+        ${exerciseModeHtml}
+    </div>
+
+    <script id="exportedScript">
+        const preloadedText = ${JSON.stringify(currentText)};
+        const preloadedWordOfDay = ${JSON.stringify(currentWordOfDay)};
+        const preloadedSyllableConfig = ${JSON.stringify(currentSyllableConfig)};
+        const preloadedAudioFolderPath = ${JSON.stringify(currentAudioFolderPath)};
+        const preloadedAudioFileExtension = ${JSON.stringify(currentAudioFileExtension)};
+
+        ${scriptContent}
+
+        document.addEventListener('DOMContentLoaded', function() {
+            audioFolderPath = preloadedAudioFolderPath; 
+            audioFileExtension = preloadedAudioFileExtension;
+            
+            populateOriginalWordsFromSource(preloadedText); 
+            parseConfigData();
+            
+            backToEditor = function() { console.log("Editor mode not available in exported exercise."); };
+            
+            const autoModeBtnExported = document.getElementById('autoModeBtn');
+            if (autoModeBtnExported && autoModeBtnExported.textContent.trim() === "Mode Auto") { 
+                 autoModeBtnExported.textContent = "اتعرف على كلمات اليوم";
+            }
+            
+            resetWords(true); 
+
+            const editorModeDiv = document.querySelector('.editor-mode'); 
+            if (editorModeDiv) editorModeDiv.classList.add('hidden'); 
+            
+            const exerciseModeDiv = document.querySelector('.exercise-mode');
+            if (exerciseModeDiv) {
+                 exerciseModeDiv.classList.remove('hidden'); 
+            }
+             const editorElementsContainer = document.querySelector('.editor-mode .editor-section');
+             if (editorElementsContainer) editorElementsContainer.innerHTML = ''; 
+
+        });
+    <\/script>
+</body>
+</html>`;
+
+            const blob = new Blob([htmlFileContent], { type: 'text/html;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'french_exercise.html';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        }
+    
+        function goToDialoguePage() {
+            const btn = document.getElementById('btnBackToDialoguePage');
+            if (!btn) return;
+            const page = btn.dataset.page;
+            if (page) window.location.href = page;
+            else alert('لم يتم تحديد صفحة الحوار.');
+        }
+
+        const dialogueInput = document.getElementById('dialoguePageNameInput');
+        const dialogueBtn = document.getElementById('btnBackToDialoguePage');
+        if (dialogueInput && dialogueBtn) {
+            dialogueInput.addEventListener('input', () => {
+                dialogueBtn.setAttribute('data-page', dialogueInput.value.trim());
+            });
+            dialogueBtn.setAttribute('data-page', dialogueInput.value.trim());
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const autoBtn = document.getElementById('autoModeBtn');
+            const editorMode = document.getElementById('editorMode');
+            if (autoBtn && editorMode && editorMode.classList.contains('hidden') && 
+                document.getElementById('wordModeContainer') && 
+                !document.getElementById('wordModeContainer').classList.contains('hidden')) { 
+                autoBtn.classList.add('blink-attention');
+            }
+        });
+
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            audioFolderPath = preloadedAudioFolderPath; 
+            audioFileExtension = preloadedAudioFileExtension;
+            
+            populateOriginalWordsFromSource(preloadedText); 
+            parseConfigData();
+            
+            backToEditor = function() { console.log("Editor mode not available in exported exercise."); };
+            
+            const autoModeBtnExported = document.getElementById('autoModeBtn');
+            if (autoModeBtnExported && autoModeBtnExported.textContent.trim() === "Mode Auto") { 
+                 autoModeBtnExported.textContent = "اتعرف على كلمات اليوم";
+            }
+            
+            resetWords(true); 
+
+            const editorModeDiv = document.querySelector('.editor-mode'); 
+            if (editorModeDiv) editorModeDiv.classList.add('hidden'); 
+            
+            const exerciseModeDiv = document.querySelector('.exercise-mode');
+            if (exerciseModeDiv) {
+                 exerciseModeDiv.classList.remove('hidden'); 
+            }
+             const editorElementsContainer = document.querySelector('.editor-mode .editor-section');
+             if (editorElementsContainer) editorElementsContainer.innerHTML = ''; 
+
+        });
+    </script>
+</body>
+</html>
