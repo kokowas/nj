@@ -25,7 +25,12 @@
         .container { max-width: 1200px; margin: 0 auto; background: rgba(255, 255, 255, 0.95); border-radius: 20px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px); overflow: hidden; }
         .header { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 20px; text-align: center; color: white; }
         .header h1 { font-size: 2rem; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); }
-        .editor-mode, .exercise-mode { padding: 20px; box-sizing: border-box; }
+        
+        .editor-mode { padding: 20px; box-sizing: border-box; }
+        .exercise-mode { padding: 10px; box-sizing: border-box; } 
+        .exercise-mode .header { display: none !important; }
+
+
         .editor-mode.hidden, .exercise-mode.hidden, .hidden { display: none !important; }
         .editor-label { font-size: 1.1rem; font-weight: bold; color: #333; margin-bottom: 10px; }
         .text-editor, .word-of-day-input, .syllable-input, .audio-config-input, .words-per-lap-input {
@@ -43,29 +48,63 @@
         .btn-demo { background: linear-gradient(to right, #f83600 0%, #f9d423 100%); }
         
         #autoModeBtn, #startSyllableModeBtn {
-            border-radius: 8px !important; 
-            padding: 15px 30px !important; 
-            font-size: calc(14px * 1.6) !important; 
-            min-width: 220px; 
+            border-radius: 10px !important; 
+            padding: 18px 25px !important; 
+            font-size: calc(14px * 1.8) !important; 
+            min-width: 250px; 
             text-align: center;
-            line-height: 1.2; 
+            line-height: 1.25; 
+            margin-top: 10px; 
+            margin-bottom: 10px;
+            display: inline-flex; 
+            align-items: center;
+            justify-content: center;
         }
+        .button-step-number {
+            font-size: 0.7em; 
+            margin-left: 10px;
+            background-color: rgba(0,0,0,0.25);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 50%;
+            line-height: 1;
+            font-weight: bold;
+        }
+
 
         @keyframes blinkAttention {
             0%, 100% { 
                 transform: scale(1); 
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); 
                 opacity: 1;
             }
             50% { 
-                transform: scale(1.05); 
-                box-shadow: 0 8px 30px rgba(255, 106, 136, 0.6); 
-                opacity: 0.7; 
+                transform: scale(1.02); 
+                box-shadow: 0 10px 35px rgba(255, 106, 136, 0.7); 
+                opacity: 0.75; 
             }
         }
 
         .blink-attention {
             animation: blinkAttention 1.2s infinite ease-in-out !important;
+        }
+        
+        .top-utility-controls {
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+            padding: 5px 10px; 
+            margin-bottom: 10px; 
+            width: 100%;
+            box-sizing: border-box;
+            flex-wrap: wrap; 
+        }
+
+        .top-utility-controls .btn {
+            padding: 6px 12px; 
+            font-size: 12px; 
+            border-radius: 20px; 
+            margin: 5px; 
         }
 
 
@@ -287,8 +326,8 @@
             .letter-form-label { font-size: 0.75rem; } 
              #autoModeBtn, #startSyllableModeBtn { 
                 padding: 12px 20px !important; 
-                font-size: calc(14px * 1.3) !important; 
-                min-width: 180px;
+                font-size: calc(14px * 1.5) !important; 
+                min-width: 200px; 
             }
         }
 
@@ -305,8 +344,8 @@
 
             #autoModeBtn, #startSyllableModeBtn { 
                 padding: 10px 15px !important; 
-                font-size: calc(14px * 1.1) !important; 
-                min-width: 150px;
+                font-size: calc(14px * 1.3) !important;  
+                min-width: 180px; 
             }
 
             .letter-forms-container { gap: 10px; }
@@ -319,22 +358,16 @@
         }
     
         .editor-mode { display: none !important; }
+        .container > .header { display: none !important; } 
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header"><h1>اتعرف على صوت اليوم</h1><p>Complétez l'exercice interactif.</p></div>
-        <div class="exercise-mode" id="exerciseMode">
-            <div id="mainControls" class="controls">
-                <button id="autoModeBtn" class="btn btn-auto blink-attention" onclick="toggleAutoMode()">اتعرف على كلمات اليوم</button>
-                <button class="btn" id="btnBackToDialoguePage" data-page="dialogue.html" onclick="goToDialoguePage()">أعود إلى صفحة الحوار</button>
-                <button class="btn" onclick="resetWords()">🔄</button>
-                
-            </div>
-            <div id="wodTransitionControls" class="controls hidden">
-                 <button id="startSyllableModeBtn" class="btn btn-guide">اتعرف على اصوات اليوم</button>
-                 <button id="replayWordsBtn" class="btn">🔄 اعادة مشاهدة حذف الكلمات</button>
-            </div>
+        <div class="exercise-mode" id="exerciseMode" style="min-height: auto;">
+            <div class="top-utility-controls" id="topUtilityBar"></div>
+
+            <div id="mainControls" class="controls"><button id="autoModeBtn" class="btn btn-auto">اتعرف على كلمات اليوم</button></div>
+            <div id="wodTransitionControls" class="controls hidden"><button id="startSyllableModeBtn" class="btn btn-guide">اتعرف على اصوات اليوم<span class="button-step-number">2</span></button><button id="replayWordsBtnTop" class="btn">🔄 اعادة مشاهدة حذف الكلمات</button></div>
              <div id="syllableControls" class="controls hidden">
                  <button id="replaySyllablesManualBtn" class="btn">🔄 قطع الكلمات يدويا</button>
             </div>
@@ -351,15 +384,15 @@
                 <div class="popup-content">
                     <span class="popup-close-btn" onclick="this.parentElement.parentElement.classList.add('hidden'); stopAllAudio();">×</span>
                     <h2 id="wodPopupTitle">كلمات اليوم هي :</h2>
-                    <div id="wodTransitionText" class="popup-words"></div>
+                    <div id="wodTransitionText" class="popup-words">Farid، maman، camion</div>
                 </div>
             </div>
             <div id="finalSoundScreen" class="overlay hidden">
                  <div class="popup-content">
                     <span class="popup-close-btn" onclick="this.parentElement.parentElement.classList.add('hidden'); stopAllAudio();">×</span>
-                    <h2 id="sodPopupTitle">صوت اليوم هو :</h2>
-                    <div id="finalSoundText" class="popup-words"></div>
-                    <div class="letter-forms-container"></div>
+                    <h2 id="sodPopupTitle">أصوات اليوم هي :</h2>
+                    <div id="finalSoundText" class="popup-words">a، ion</div>
+                    <div class="letter-forms-container"><div class="letter-form-group"><div class="form-type-maj"><div class="letter-form cursive">A</div><div class="letter-form-label">Cursive Majuscule</div></div><div class="form-type-min"><div class="letter-form cursive">a</div><div class="letter-form-label">Cursive Minuscule</div></div><div class="form-type-maj"><div class="letter-form">A</div><div class="letter-form-label">Script Majuscule</div></div><div class="form-type-min"><div class="letter-form">a</div><div class="letter-form-label">Script Minuscule</div></div></div><div class="letter-form-group"><div class="form-type-maj"><div class="letter-form cursive">Ion</div><div class="letter-form-label">Cursive Majuscule</div></div><div class="form-type-min"><div class="letter-form cursive">ion</div><div class="letter-form-label">Cursive Minuscule</div></div><div class="form-type-maj"><div class="letter-form">ION</div><div class="letter-form-label">Script Majuscule</div></div><div class="form-type-min"><div class="letter-form">ion</div><div class="letter-form-label">Script Minuscule</div></div></div></div>
                 </div>
             </div>
         </div>
@@ -371,6 +404,8 @@
         const preloadedSyllableConfig = "farid:fa-rid:a, maman:ma-man:a, camion:ca-mion:ion";
         const preloadedAudioFolderPath = "audio/";
         const preloadedAudioFileExtension = ".mp3";
+        const preloadedDialoguePage = "index.html";
+
 
         
         let originalWords = []; 
@@ -397,23 +432,69 @@
         const PAUSE_BEFORE_POPUP = 800; 
         const PAUSE_AFTER_WOD_INTRO = 500; 
 
-        document.getElementById('startSyllableModeBtn').addEventListener('click', function() {
-            this.classList.remove('blink-attention');
-            document.getElementById('wodTransitionScreen').classList.add('hidden'); 
-            isAutoModeActive = true; 
-            const autoBtn = document.getElementById('autoModeBtn');
-            if(autoBtn) {
-                autoBtn.textContent = '⏹️';
-                autoBtn.classList.remove('blink-attention');
-            }
-            document.querySelectorAll('#wodTransitionControls .btn').forEach(b => b.disabled = true); 
-            startAutoSyllableMode(); 
-        });
+        // Function to create and setup buttons dynamically
+        function setupButton(buttonId, text, number, clickHandler, isGuide = false, isAuto = false) {
+            const btn = document.createElement('button');
+            btn.id = buttonId;
+            btn.className = 'btn';
+            if (isGuide) btn.classList.add('btn-guide');
+            if (isAuto) btn.classList.add('btn-auto');
+            
+            btn.onclick = clickHandler;
 
-        document.getElementById('replayWordsBtn').addEventListener('click', () => resetWords()); 
-        document.getElementById('replaySyllablesBtn').addEventListener('click', replaySyllableMode);
-        document.getElementById('replaySyllablesManualBtn').addEventListener('click', () => enterSyllableMode(true));
-        document.getElementById('fullDemoBtn').addEventListener('click', startFullDemo);
+            const textNode = document.createTextNode(text);
+            btn.appendChild(textNode);
+
+            if (number) {
+                const numberSpan = document.createElement('span');
+                numberSpan.className = 'button-step-number';
+                numberSpan.textContent = number;
+                btn.appendChild(numberSpan);
+            }
+            return btn;
+        }
+        
+        function populateTopUtilityBar(state) {
+            const topBar = document.getElementById('topUtilityBar');
+            topBar.innerHTML = ''; 
+
+            const backToDialogueBtn = document.createElement('button');
+            backToDialogueBtn.id = 'btnBackToDialoguePageTop'; 
+            backToDialogueBtn.className = 'btn';
+            backToDialogueBtn.textContent = 'أعود إلى صفحة الحوار';
+            backToDialogueBtn.onclick = goToDialoguePage;
+            backToDialogueBtn.dataset.page = document.getElementById('dialoguePageNameInput')?.value || preloadedDialoguePage || 'dialogue.html'; // Use preloaded if editor input not found
+            
+            const resetBtn = document.createElement('button');
+            resetBtn.className = 'btn';
+            resetBtn.innerHTML = '🔄';
+            resetBtn.onclick = resetWords;
+
+            const backToEditorBtn = document.createElement('button');
+            backToEditorBtn.className = 'btn btn-back';
+            backToEditorBtn.innerHTML = '← Retour à l\'Éditeur';
+            backToEditorBtn.onclick = backToEditor;
+
+            topBar.appendChild(backToDialogueBtn);
+            topBar.appendChild(resetBtn);
+            
+            if (state === 'wodTransition') {
+                const replayWordsBtnOriginal = document.getElementById('replayWordsBtnTop'); 
+                if(replayWordsBtnOriginal) { // This button might be static in wodTransitionControls
+                    // No need to add it again if it's already part of wodTransitionControls HTML
+                } else { // If it needs to be dynamically added to top bar for this state
+                    const replayWODBtn = document.createElement('button');
+                    replayWODBtn.className = 'btn';
+                    replayWODBtn.textContent = '🔄 اعادة مشاهدة حذف الكلمات';
+                    replayWODBtn.onclick = () => resetWords(); // Or specific replay logic
+                    topBar.appendChild(replayWODBtn);
+                }
+            }
+            const editorModeDiv = document.getElementById('editorMode');
+            if (editorModeDiv && editorModeDiv.classList.contains('hidden')) {
+                 topBar.appendChild(backToEditorBtn);
+            }
+        }
         
         function robustCleanString(str) {
             if (typeof str !== 'string') return '';
@@ -544,18 +625,22 @@
             stopAllAudio(); 
             const autoBtn = document.getElementById('autoModeBtn');
             if(autoBtn) {
-                 autoBtn.textContent = 'اتعرف على كلمات اليوم';
+                 const textNode = autoBtn.firstChild;
+                 if(textNode) textNode.textContent = 'اتعرف على كلمات اليوم'; 
+                 const numSpan = autoBtn.querySelector('.button-step-number');
+                 if(numSpan) numSpan.style.display = 'inline-block'; 
+                 
                  if (!document.getElementById('wordModeContainer')?.classList.contains('hidden') || 
                      (document.getElementById('editorMode') && !document.getElementById('editorMode').classList.contains('hidden'))) {
                     autoBtn.classList.add('blink-attention'); 
                  }
             }
             const startSyllableBtn = document.getElementById('startSyllableModeBtn');
-            if (startSyllableBtn && startSyllableBtn.closest('#wodTransitionControls') && !startSyllableBtn.closest('#wodTransitionControls').classList.contains('hidden')){
+            if (startSyllableBtn && startSyllableBtn.parentElement && startSyllableBtn.parentElement.id === 'wodTransitionControls' && !startSyllableBtn.parentElement.classList.contains('hidden')){
                  startSyllableBtn.classList.add('blink-attention');
             }
 
-            document.querySelectorAll('#mainControls .btn, #wodTransitionControls .btn, #syllableControls .btn, #finalControls .btn').forEach(b => b.disabled = false);
+            document.querySelectorAll('.top-utility-controls .btn, #mainControls .btn, #wodTransitionControls .btn, #syllableControls .btn, #finalControls .btn').forEach(b => b.disabled = false);
         
             if (!document.getElementById('syllableModeContainer')?.classList.contains('hidden')) {
                  enterSyllableMode(true); 
@@ -593,6 +678,8 @@
             resetWords(true); 
             document.getElementById('editorMode').classList.add('hidden');
             document.getElementById('exerciseMode').classList.remove('hidden'); 
+            const mainHeader = document.querySelector('.container > .header');
+            if(mainHeader) mainHeader.style.display = 'none'; 
         }
 
         function backToEditor() {
@@ -601,6 +688,9 @@
 
             document.getElementById('exerciseMode').classList.add('hidden');
             document.getElementById('editorMode').classList.remove('hidden');
+            const mainHeader = document.querySelector('.container > .header');
+            if(mainHeader) mainHeader.style.display = 'block'; 
+
             const exerciseModeDiv = document.getElementById('exerciseMode');
             if (exerciseModeDiv) exerciseModeDiv.style.minHeight = 'auto'; 
 
@@ -621,17 +711,11 @@
             const finalSoundScreen = document.getElementById('finalSoundScreen');
             if (finalSoundScreen) finalSoundScreen.classList.add('hidden');
 
-            const mainControls = document.getElementById('mainControls');
-            if (mainControls) mainControls.classList.remove('hidden');
-            
-            const wodTransitionControls = document.getElementById('wodTransitionControls');
-            if (wodTransitionControls) wodTransitionControls.classList.add('hidden');
-            
-            const syllableControls = document.getElementById('syllableControls');
-            if (syllableControls) syllableControls.classList.add('hidden');
-
-            const finalControls = document.getElementById('finalControls');
-            if (finalControls) finalControls.classList.add('hidden');
+            document.getElementById('mainControls').classList.remove('hidden');
+            document.getElementById('wodTransitionControls').classList.add('hidden');
+            document.getElementById('syllableControls').classList.add('hidden');
+            document.getElementById('finalControls').classList.add('hidden');
+            document.getElementById('topUtilityBar').innerHTML = ''; 
 
             document.querySelectorAll('#mainControls .btn:not(#autoModeBtn)').forEach(b => b.disabled = false);
         }
@@ -743,10 +827,10 @@
         async function prepareAndShowWodTransition() {
             await playWodPopupSound(); 
             deduplicateAndStyleWODs(); 
-            // Play individual WOD audios *before* the pause and showing the popup
+            
             const displayedWODsElements = Array.from(document.querySelectorAll('.word-column .word-box.word-of-day-styled'));
             for (const wodBox of displayedWODsElements) {
-                if (!isAutoModeActive && document.getElementById('wodTransitionScreen')?.classList.contains('hidden') === false && document.getElementById('autoModeBtn')) break; // If popup manually closed or auto stopped
+                if (!isAutoModeActive && document.getElementById('wodTransitionScreen')?.classList.contains('hidden') === false && document.getElementById('autoModeBtn')) break;
                 await playWordAudio(wodBox.dataset.word, wodBox);
             }
             await new Promise(r => setTimeout(r, PAUSE_AFTER_WOD_INTRO)); 
@@ -795,16 +879,13 @@
             
             wodPopup.classList.remove('hidden'); 
             
-            // Individual WOD audio is now played in prepareAndShowWodTransition, before this function is called.
-            // currentAudioSequence = Promise.resolve(); 
-            // for (const wodBox of displayedWODs) { ... } // THIS LOOP MOVED
-
             const WODsForSyllableMode = nonRemovableWords.filter(wod => syllableConfig[robustCleanString(wod).toLowerCase()]);
 
+            document.getElementById('mainControls').classList.add('hidden'); 
             if (WODsForSyllableMode.length === 0) { 
-                document.getElementById('mainControls').classList.add('hidden');
                 document.getElementById('wodTransitionControls').classList.add('hidden');
                 document.getElementById('syllableControls').classList.add('hidden');
+                populateTopUtilityBar('final');
                 
                 const finalLetters = [...new Set(nonRemovableWords
                     .map(nrWord => syllableConfig[robustCleanString(nrWord).toLowerCase()]?.finalLetter)
@@ -828,26 +909,30 @@
                 }
                 return; 
             }
-
-            document.getElementById('mainControls').classList.add('hidden');
-            document.getElementById('wodTransitionControls').classList.remove('hidden');
+            
+            populateTopUtilityBar('wodTransition');
+            document.getElementById('wodTransitionControls').classList.remove('hidden'); 
             const startSyllableBtn = document.getElementById('startSyllableModeBtn');
             if (startSyllableBtn) startSyllableBtn.classList.add('blink-attention');
+             applyExerciseMinHeight(); // Ensure min height is maintained
         }
 
         function enterSyllableMode(showManualControls = false) {
             document.getElementById('wodTransitionScreen').classList.add('hidden');
-            document.getElementById('wodTransitionControls').classList.add('hidden');
+            document.getElementById('wodTransitionControls').classList.add('hidden'); 
             stopAllAudio(); 
 
+            populateTopUtilityBar('syllable'); 
+
             if (showManualControls) {
-                document.getElementById('syllableControls').classList.remove('hidden');
+                document.getElementById('syllableControls').classList.remove('hidden'); 
                  isAutoModeActive = false; 
                  if(document.getElementById('autoModeBtn')) document.getElementById('autoModeBtn').textContent = 'اتعرف على كلمات اليوم';
 
             } else {
                 document.getElementById('syllableControls').classList.add('hidden');
             }
+            document.getElementById('mainControls').classList.add('hidden'); 
             document.getElementById('wordModeContainer').classList.add('hidden');
             const syllableContainer = document.getElementById('syllableModeContainer');
             syllableContainer.innerHTML = '';
@@ -881,10 +966,7 @@
                 const card = createSyllableCard(displayWord, dataWord, showManualControls); 
                 syllableContainer.appendChild(card);
             });
-            const exerciseModeDiv = document.getElementById('exerciseMode');
-            if (exerciseModeDiv && initialExerciseHeight > 0) {
-                exerciseModeDiv.style.minHeight = `${initialExerciseHeight}px`;
-            }
+            applyExerciseMinHeight(); 
         }
 
         function createSyllableCard(displayWord, dataWord, showManualControls) { 
@@ -1176,7 +1258,6 @@
             }
         }
 
-        // REVISED: finalizeSODBox includes became.mp3 + SOD sound
         async function finalizeSODBox(sodCharBox, finalLetterSOD) { 
             if (!sodCharBox || sodCharBox.classList.contains('letter-of-day')) return; 
 
@@ -1189,7 +1270,7 @@
             await new Promise(r => setTimeout(r, 150)); 
 
             sodCharBox.className = 'syllable-box letter-of-day'; 
-            sodCharBox.textContent = finalLetterSOD.toUpperCase(); 
+            sodCharBox.textContent = finalLetterSOD; // Keep original case from config for SOD display
             sodCharBox.style.fontSize = ''; 
             sodCharBox.style.padding = '';  
             sodCharBox.onclick = null; 
@@ -1219,6 +1300,14 @@
             const replayBtn = card.querySelector('.controls .btn:not(.btn-syllable)');
             if (replayBtn) replayBtn.classList.add('hidden');
         }
+        
+        function applyExerciseMinHeight() {
+            const exerciseModeDiv = document.getElementById('exerciseMode');
+            if (exerciseModeDiv && initialExerciseHeight > 0) {
+                exerciseModeDiv.style.minHeight = `${initialExerciseHeight}px`;
+            }
+        }
+
 
         function resetWords(isInitialSetup = false) { 
             stopAllAudio(); 
@@ -1234,25 +1323,50 @@
             const wordModeContainer = document.getElementById('wordModeContainer');
             const syllableModeContainer = document.getElementById('syllableModeContainer');
             const column = document.getElementById('column1');
+            const mainControlsDiv = document.getElementById('mainControls');
+
+            // Clear and repopulate column before measuring
+            if(column) column.innerHTML = '';
+            if(originalWords && originalWords.length > 0 && column) {
+                originalWords.forEach((word) => { 
+                    const wordBox = createWordBox(word); 
+                    column.appendChild(wordBox);
+                });
+            }
+            document.querySelectorAll('.word-column .word-box').forEach(wb => wb.addEventListener('click', handleWordBoxClick));
+            
+            // Setup main controls area with the auto button
+            mainControlsDiv.innerHTML = ''; 
+            const autoModeButton = setupButton('autoModeBtn', 'اتعرف على كلمات اليوم', '1', toggleAutoMode, false, true);
+            autoModeButton.classList.add('blink-attention');
+            mainControlsDiv.appendChild(autoModeButton);
+
 
             if (exerciseModeDiv) {
                 if (isInitialSetup || initialExerciseHeight === 0) {
                     exerciseModeDiv.style.minHeight = 'auto'; 
-                    if (wordModeContainer && column) {
+                    if (wordModeContainer && column && mainControlsDiv) {
                         exerciseModeDiv.classList.remove('hidden');
                         wordModeContainer.classList.remove('hidden');
+                        mainControlsDiv.classList.remove('hidden'); 
+                        
                         requestAnimationFrame(() => {
                             requestAnimationFrame(() => {
-                                let baseHeight = column.scrollHeight;
-                                const controlsHeight = document.getElementById('mainControls')?.offsetHeight || 0;
-                                initialExerciseHeight = baseHeight + controlsHeight + 60; 
-                                if (initialExerciseHeight < 300) initialExerciseHeight = 300; 
+                                let baseHeight = column.offsetHeight;
+                                const topBar = document.getElementById('topUtilityBar');
+                                let topBarHeight = (topBar && getComputedStyle(topBar).display !== 'none') ? (topBar.offsetHeight + parseInt(getComputedStyle(topBar).marginBottom || '0')) : 0;
+                                
+                                let currentControlsHeight = 0;
+                                if(mainControlsDiv && !mainControlsDiv.classList.contains('hidden')) currentControlsHeight = mainControlsDiv.offsetHeight + parseInt(getComputedStyle(mainControlsDiv).marginTop || '0') + parseInt(getComputedStyle(mainControlsDiv).marginBottom || '0');
+
+                                initialExerciseHeight = baseHeight + topBarHeight + currentControlsHeight + 80; 
+                                if (initialExerciseHeight < 500) initialExerciseHeight = 500; 
                                 exerciseModeDiv.style.minHeight = `${initialExerciseHeight}px`;
                             });
                         });
                     }
-                } else if (initialExerciseHeight > 0) {
-                    exerciseModeDiv.style.minHeight = `${initialExerciseHeight}px`;
+                } else { // Not initial setup, but reset, so reapply calculated height
+                    applyExerciseMinHeight();
                 }
             }
 
@@ -1262,32 +1376,50 @@
             if(document.getElementById('wodTransitionScreen')) document.getElementById('wodTransitionScreen').classList.add('hidden');
             if(document.getElementById('finalSoundScreen')) document.getElementById('finalSoundScreen').classList.add('hidden');
             
-            const mainControls = document.getElementById('mainControls');
-            if(mainControls) {
-                mainControls.classList.remove('hidden');
-                const autoBtn = mainControls.querySelector('#autoModeBtn');
-                if(autoBtn) autoBtn.classList.add('blink-attention');
-            }
-            if(document.getElementById('wodTransitionControls')) document.getElementById('wodTransitionControls').classList.add('hidden');
+            mainControlsDiv.classList.remove('hidden');
+            populateTopUtilityBar('main'); 
+
+            // Rebuild WOD transition controls
+            const wodControlsDiv = document.getElementById('wodTransitionControls');
+            wodControlsDiv.innerHTML = ''; 
+            const startSyllableButton = setupButton('startSyllableModeBtn', 'اتعرف على اصوات اليوم', '2', function() {
+                this.classList.remove('blink-attention');
+                document.getElementById('wodTransitionScreen').classList.add('hidden'); 
+                isAutoModeActive = true; 
+                const autoBtn = document.getElementById('autoModeBtn');
+                if(autoBtn) {
+                    const textNode = autoBtn.firstChild;
+                    textNode.textContent = '⏹️';
+                    const numSpan = autoBtn.querySelector('.button-step-number');
+                    if(numSpan) numSpan.style.display = 'none';
+                    autoBtn.classList.remove('blink-attention');
+                }
+                document.querySelectorAll('#wodTransitionControls .btn').forEach(b => b.disabled = true); 
+                startAutoSyllableMode(); 
+            }, true, false); 
+            wodControlsDiv.appendChild(startSyllableButton);
+            
+            const replayWordsBtnWOD = document.createElement('button');
+            replayWordsBtnWOD.id = 'replayWordsBtnTop'; 
+            replayWordsBtnWOD.className = 'btn';
+            replayWordsBtnWOD.textContent = '🔄 اعادة مشاهدة حذف الكلمات';
+            replayWordsBtnWOD.onclick = () => resetWords();
+            wodControlsDiv.appendChild(replayWordsBtnWOD);
+            wodControlsDiv.classList.add('hidden');
+
+
             if(document.getElementById('syllableControls')) document.getElementById('syllableControls').classList.add('hidden');
             if(document.getElementById('finalControls')) document.getElementById('finalControls').classList.add('hidden');
             
-            if(column) column.innerHTML = '';
-
-            if(originalWords && originalWords.length > 0 && column) {
-                originalWords.forEach((word) => { 
-                    const wordBox = createWordBox(word); 
-                    column.appendChild(wordBox);
-                });
-            }
-            document.querySelectorAll('.word-column .word-box').forEach(wb => wb.addEventListener('click', handleWordBoxClick));
 
             const autoBtnReset = document.getElementById('autoModeBtn');
             if (autoBtnReset && isAutoModeActive) { 
                 isAutoModeActive = false; 
-                autoBtnReset.textContent = 'اتعرف على كلمات اليوم';
+                autoBtnReset.firstChild.textContent = 'اتعرف على كلمات اليوم';
+                const numSpan = autoBtnReset.querySelector('.button-step-number');
+                 if(numSpan) numSpan.style.display = 'inline-block';
             }
-            document.querySelectorAll('#mainControls .btn').forEach(b => b.disabled = false); 
+             applyExerciseMinHeight(); // Ensure height is applied after DOM changes
         }
 
         function isNonRemovable(cleanedWord) { 
@@ -1302,7 +1434,15 @@
             isAutoModeActive = !isAutoModeActive;
             
             if (btn) {
-                btn.textContent = isAutoModeActive ? '⏹️' : 'اتعرف على كلمات اليوم';
+                const textNode = btn.firstChild;
+                const currentText = textNode.textContent.replace(/\s*\(\s*\d+\s*\)$/, '').trim();
+                const numberSpan = btn.querySelector('.button-step-number');
+                
+                textNode.textContent = isAutoModeActive ? '⏹️' : currentText;
+                if(numberSpan && isAutoModeActive) numberSpan.style.display = 'none';
+                if(numberSpan && !isAutoModeActive) numberSpan.style.display = 'inline-block';
+
+
                 if (isAutoModeActive) {
                     btn.classList.remove('blink-attention');
                 } else {
@@ -1348,7 +1488,7 @@
 
         async function runAutoModeStep() {
             if (!isAutoModeActive) return;
-            document.querySelectorAll('#mainControls .btn:not(#autoModeBtn)').forEach(b => b.disabled = true);
+            document.querySelectorAll('.top-utility-controls .btn').forEach(b => b.disabled = true); 
 
             if (!initialPhrasePlayedForAutoMode && phraseSoundFilename) {
                 await playWordAudio(phraseSoundFilename); 
@@ -1390,9 +1530,12 @@
         async function startAutoSyllableMode() {
             if (!isAutoModeActive) {
                 isAutoModeActive = true;
-                const autoBtn = document.getElementById('autoModeBtn');
+                const autoBtn = document.getElementById('autoModeBtn'); 
                 if (autoBtn) {
-                    autoBtn.textContent = '⏹️';
+                    const textNode = autoBtn.firstChild;
+                    textNode.textContent = '⏹️'; 
+                    const numSpan = autoBtn.querySelector('.button-step-number');
+                    if(numSpan) numSpan.style.display = 'none';
                     autoBtn.classList.remove('blink-attention');
                 }
             }
@@ -1403,7 +1546,7 @@
             enterSyllableMode(false); 
             await new Promise(r => setTimeout(r, 1000)); 
             
-            document.getElementById('wodTransitionControls').classList.add('hidden');
+            document.getElementById('wodTransitionControls').classList.add('hidden'); 
             document.getElementById('syllableControls').classList.add('hidden'); 
 
             const cards = document.querySelectorAll('.syllable-word-card');
@@ -1524,6 +1667,7 @@
                 stopAutoMode(); 
             }
             
+            populateTopUtilityBar('final');
             const popup = document.getElementById('finalSoundScreen');
             const sodPopupTitle = document.getElementById('sodPopupTitle'); 
             const finalLetters = [...new Set(nonRemovableWords
@@ -1560,18 +1704,21 @@
             document.querySelectorAll('#finalControls .btn').forEach(b => b.disabled = false); 
             popup.classList.remove('hidden');
 
-            const exerciseModeDiv = document.getElementById('exerciseMode');
-            if (exerciseModeDiv && initialExerciseHeight > 0) {
-                exerciseModeDiv.style.minHeight = `${initialExerciseHeight}px`;
-            }
+            applyExerciseMinHeight();
         }
 
         async function replaySyllableMode() { 
             document.getElementById('finalSoundScreen').classList.add('hidden');
-            document.getElementById('finalControls').classList.add('hidden');
+            document.getElementById('finalControls').classList.add('hidden'); 
             isAutoModeActive = true; 
-            const autoBtn = document.getElementById('autoModeBtn');
-            if(autoBtn) autoBtn.textContent = '⏹️';
+            const autoBtn = document.getElementById('autoModeBtn'); 
+            if(autoBtn) { 
+                const textNode = autoBtn.firstChild;
+                textNode.textContent = '⏹️';
+                const numSpan = autoBtn.querySelector('.button-step-number');
+                if(numSpan) numSpan.style.display = 'none';
+                autoBtn.classList.remove('blink-attention');
+            }
             stopAllAudio(); 
             await startAutoSyllableMode();
         }
@@ -1608,22 +1755,24 @@
 
             const autoBtn = document.getElementById('autoModeBtn');
             if(autoBtn) {
-                autoBtn.textContent = '⏹️';
+                autoBtn.firstChild.textContent = '⏹️';
+                const numSpan = autoBtn.querySelector('.button-step-number');
+                if(numSpan) numSpan.style.display = 'none';
                 autoBtn.classList.remove('blink-attention');
             }
              const startSyllableBtn = document.getElementById('startSyllableModeBtn');
              if(startSyllableBtn) startSyllableBtn.classList.remove('blink-attention');
 
 
-            document.querySelectorAll('#mainControls .btn:not(#autoModeBtn), #wodTransitionControls .btn, #syllableControls .btn, #finalControls .btn').forEach(b => b.disabled = true);
-            if(autoBtn) autoBtn.disabled = false; 
+            document.querySelectorAll('.top-utility-controls .btn, #wodTransitionControls .btn, #syllableControls .btn, #finalControls .btn').forEach(b => b.disabled = true);
+            if(autoBtn) autoBtn.disabled = false;  
 
             await runAutoModeStep(); 
 
             if (isAutoModeActive) { 
                 const WODsForSyllableMode = nonRemovableWords.filter(wod => syllableConfig[robustCleanString(wod).toLowerCase()]);
                 if (WODsForSyllableMode.length > 0) {
-                     document.getElementById('mainControls').classList.add('hidden');
+                     document.getElementById('mainControls').classList.add('hidden'); 
                      document.getElementById('wodTransitionControls').classList.add('hidden'); 
                      document.getElementById('wodTransitionScreen').classList.add('hidden');
                      await startAutoSyllableMode(); 
@@ -1687,11 +1836,10 @@
             scriptContent = scriptContent.replace(/let\s+otherWordSoundFilename\s*=\s*'otherword';/g, `let otherWordSoundFilename = '${currentOtherWordSoundName}';`);
             scriptContent = scriptContent.replace(/let\s+initialExerciseHeight\s*=\s*0;/g, `let initialExerciseHeight = 0;`);
             
-            const tempDialogueBtn = document.getElementById('btnBackToDialoguePage');
-            if (tempDialogueBtn) { tempDialogueBtn.setAttribute('data-page', currentDialoguePage); }
             let exerciseModeHtml = document.getElementById('exerciseMode').outerHTML;
-            exerciseModeHtml = exerciseModeHtml.replace(/<button class="btn btn-back" onclick="backToEditor\(\)">← Retour à l'Éditeur<\/button>/g, '');
+            exerciseModeHtml = exerciseModeHtml.replace(/<div class="top-utility-controls" id="topUtilityBar">.*?<\/div>/s, '<div class="top-utility-controls" id="topUtilityBar"></div>');
             exerciseModeHtml = exerciseModeHtml.replace('class="exercise-mode hidden"', 'class="exercise-mode"'); 
+
 
             const htmlFileContent = `
 <!DOCTYPE html>
@@ -1703,11 +1851,11 @@
     <style>
         ${styleContent}
         .editor-mode { display: none !important; }
+        .container > .header { display: none !important; } 
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header"><h1>اتعرف على صوت اليوم</h1><p>Complétez l'exercice interactif.</p></div>
         ${exerciseModeHtml}
     </div>
 
@@ -1717,6 +1865,8 @@
         const preloadedSyllableConfig = ${JSON.stringify(currentSyllableConfig)};
         const preloadedAudioFolderPath = ${JSON.stringify(currentAudioFolderPath)};
         const preloadedAudioFileExtension = ${JSON.stringify(currentAudioFileExtension)};
+        const preloadedDialoguePage = ${JSON.stringify(currentDialoguePage)};
+
 
         ${scriptContent}
 
@@ -1724,14 +1874,24 @@
             audioFolderPath = preloadedAudioFolderPath; 
             audioFileExtension = preloadedAudioFileExtension;
             
+            // Dialogue page for exported page's utility button will be set by populateTopUtilityBar
+            // using preloadedDialoguePage.
+
             populateOriginalWordsFromSource(preloadedText); 
             parseConfigData();
             
-            backToEditor = function() { console.log("Editor mode not available in exported exercise."); };
+            backToEditor = function() { 
+                alert("Retour à l'éditeur non disponible ici. L'exercice va redémarrer.");
+                location.reload(); 
+            };
             
             const autoModeBtnExported = document.getElementById('autoModeBtn');
-            if (autoModeBtnExported && autoModeBtnExported.textContent.trim() === "Mode Auto") { 
-                 autoModeBtnExported.textContent = "اتعرف على كلمات اليوم";
+            if (autoModeBtnExported && autoModeBtnExported.firstChild.textContent.trim() === "Mode Auto") { 
+                 const textNode = autoModeBtnExported.firstChild;
+                 textNode.textContent = "اتعرف على كلمات اليوم";
+                 if(autoModeBtnExported.querySelector('.button-step-number')) { 
+                    autoModeBtnExported.querySelector('.button-step-number').textContent = '1';
+                 }
             }
             
             resetWords(true); 
@@ -1762,23 +1922,59 @@
         }
     
         function goToDialoguePage() {
-            const btn = document.getElementById('btnBackToDialoguePage');
+            const btn = document.getElementById('btnBackToDialoguePageTop'); 
             if (!btn) return;
             const page = btn.dataset.page;
             if (page) window.location.href = page;
             else alert('لم يتم تحديد صفحة الحوار.');
         }
 
-        const dialogueInput = document.getElementById('dialoguePageNameInput');
-        const dialogueBtn = document.getElementById('btnBackToDialoguePage');
-        if (dialogueInput && dialogueBtn) {
+        if (document.getElementById('dialoguePageNameInput')) { 
+            const dialogueInput = document.getElementById('dialoguePageNameInput');
             dialogueInput.addEventListener('input', () => {
-                dialogueBtn.setAttribute('data-page', dialogueInput.value.trim());
+                const dialogueBtnTop = document.getElementById('btnBackToDialoguePageTop');
+                if (dialogueBtnTop) dialogueBtnTop.dataset.page = dialogueInput.value.trim();
             });
-            dialogueBtn.setAttribute('data-page', dialogueInput.value.trim());
         }
 
+
         document.addEventListener('DOMContentLoaded', () => {
+            // Initial setup of main control buttons
+            const mainControlsDiv = document.getElementById('mainControls');
+            if (!mainControlsDiv.querySelector('#autoModeBtn')) { 
+                 const autoModeButton = setupButton('autoModeBtn', 'اتعرف على كلمات اليوم', '1', toggleAutoMode, false, true);
+                 mainControlsDiv.appendChild(autoModeButton);
+            }
+
+            const wodControlsDiv = document.getElementById('wodTransitionControls');
+            if (wodControlsDiv && !wodControlsDiv.querySelector('#startSyllableModeBtn')) { 
+                const startSyllableButton = setupButton('startSyllableModeBtn', 'اتعرف على اصوات اليوم', '2', function() {
+                    this.classList.remove('blink-attention');
+                    document.getElementById('wodTransitionScreen').classList.add('hidden'); 
+                    isAutoModeActive = true; 
+                    const autoBtn = document.getElementById('autoModeBtn');
+                    if(autoBtn) {
+                        const textNode = autoBtn.firstChild; 
+                        textNode.textContent = '⏹️'; 
+                        const numSpan = autoBtn.querySelector('.button-step-number');
+                        if(numSpan) numSpan.style.display = 'none'; 
+                        autoBtn.classList.remove('blink-attention');
+                    }
+                    document.querySelectorAll('#wodTransitionControls .btn').forEach(b => b.disabled = true); 
+                    startAutoSyllableMode(); 
+                }, true, false); 
+                wodControlsDiv.appendChild(startSyllableButton);
+            }
+             if (wodControlsDiv && !wodControlsDiv.querySelector('#replayWordsBtnTop')) { 
+                const replayWordsBtnWOD = document.createElement('button');
+                replayWordsBtnWOD.id = 'replayWordsBtnTop'; 
+                replayWordsBtnWOD.className = 'btn';
+                replayWordsBtnWOD.textContent = '🔄 اعادة مشاهدة حذف الكلمات';
+                replayWordsBtnWOD.onclick = () => resetWords();
+                wodControlsDiv.appendChild(replayWordsBtnWOD);
+            }
+
+
             const autoBtn = document.getElementById('autoModeBtn');
             const editorMode = document.getElementById('editorMode');
             if (autoBtn && editorMode && editorMode.classList.contains('hidden') && 
@@ -1786,6 +1982,17 @@
                 !document.getElementById('wordModeContainer').classList.contains('hidden')) { 
                 autoBtn.classList.add('blink-attention');
             }
+            if (editorMode && editorMode.classList.contains('hidden')) {
+                populateTopUtilityBar('main');
+            } else { 
+                 const mainHeader = document.querySelector('.container > .header');
+                 if(mainHeader) mainHeader.style.display = 'block';
+            }
+
+            // Attach static button listeners here to avoid issues with dynamic creation
+            document.getElementById('replaySyllablesBtn').addEventListener('click', replaySyllableMode);
+            document.getElementById('replaySyllablesManualBtn').addEventListener('click', () => enterSyllableMode(true));
+            document.getElementById('fullDemoBtn').addEventListener('click', startFullDemo);
         });
 
 
@@ -1794,14 +2001,24 @@
             audioFolderPath = preloadedAudioFolderPath; 
             audioFileExtension = preloadedAudioFileExtension;
             
+            // Dialogue page for exported page's utility button will be set by populateTopUtilityBar
+            // using preloadedDialoguePage.
+
             populateOriginalWordsFromSource(preloadedText); 
             parseConfigData();
             
-            backToEditor = function() { console.log("Editor mode not available in exported exercise."); };
+            backToEditor = function() { 
+                alert("Retour à l'éditeur non disponible ici. L'exercice va redémarrer.");
+                location.reload(); 
+            };
             
             const autoModeBtnExported = document.getElementById('autoModeBtn');
-            if (autoModeBtnExported && autoModeBtnExported.textContent.trim() === "Mode Auto") { 
-                 autoModeBtnExported.textContent = "اتعرف على كلمات اليوم";
+            if (autoModeBtnExported && autoModeBtnExported.firstChild.textContent.trim() === "Mode Auto") { 
+                 const textNode = autoModeBtnExported.firstChild;
+                 textNode.textContent = "اتعرف على كلمات اليوم";
+                 if(autoModeBtnExported.querySelector('.button-step-number')) { 
+                    autoModeBtnExported.querySelector('.button-step-number').textContent = '1';
+                 }
             }
             
             resetWords(true); 
